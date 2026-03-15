@@ -88,26 +88,44 @@
     }
     .sum-val { font-weight: 900; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 20px; margin-left: 5px; text-shadow: 0 1px 1px rgba(0,0,0,0.1); }
     
-    /* BẢNG TRA CỨU KẺ ĐẬM */
-    .table-wrapper { flex-grow: 1; overflow: auto; border: 2px solid #333; position: relative; }
-    .table-custom { width: 100%; border-collapse: separate; border-spacing: 0; }
-    .table-custom thead th { position: sticky; top: 0; z-index: 100; background-color: #e2e3e5; color: #000; border-bottom: 2px solid #000; border-right: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; }
-    .table-custom tbody td { vertical-align: middle; border-bottom: 1px solid #000; border-right: 1px solid #000; padding: 6px 8px; color: #000; }
-    .table-custom thead th:last-child, .table-custom tbody td:last-child { border-right: none; }
+    /* CẬP NHẬT: SỬA LỖI VIỀN ĐEN BẢNG VÀ KHOẢNG TRỐNG */
+    .table-wrapper { flex-grow: 1; overflow: auto; position: relative; } /* Xóa viền ở wrapper */
+    .table-custom { width: 100%; border-collapse: separate; border-spacing: 0; border: 2px solid #333; } /* Chuyển viền vào trực tiếp table */
+    
+    .table-custom thead th { 
+      position: sticky; top: 0; z-index: 100; 
+      background-color: #e2e3e5; color: #000;               
+      border-bottom: 2px solid #000; border-right: 1px solid #000;  
+      padding: 8px; text-align: center; font-weight: bold;
+    }
+    
+    .table-custom tbody td { 
+      vertical-align: middle; border-bottom: 1px solid #000; 
+      border-right: 1px solid #000; padding: 6px 8px; color: #000;
+    }
+    
+    .table-custom thead th:last-child, 
+    .table-custom tbody td:last-child {
+      border-right: none;
+    }
 
     .amt-col { text-align: right; font-weight: bold; }
-    .income { color: #198754; }
+    .income { color: #198754; } 
     .expense { color: #dc3545; }
 
     /* INPUT TAB - Form rộng 1000px */
     .input-layout { display: flex; flex-direction: column; height: 100%; max-width: 1000px; margin: 0 auto; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
     .input-header { background: #f8fafc; padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; color: #1e3a8a; font-weight: bold; font-size: 16px; }
     .input-body { flex-grow: 1; overflow-y: auto; padding: 15px; background: white; }
+    
     .form-control:focus { border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1); }
     textarea.auto-grow { resize: none; overflow: hidden; min-height: 32px; height: 32px; transition: height 0.1s; }
 
     /* FOOTER */
-    .dev-footer { flex-shrink: 0; text-align: center; padding: 10px; font-size: 13px; color: #64748b; border-top: 1px solid #dee2e6; background: #f8fafc; }
+    .dev-footer {
+        flex-shrink: 0; text-align: center; padding: 10px; font-size: 13px; color: #64748b;
+        border-top: 1px solid #dee2e6; background: #f8fafc;
+    }
 
     /* ========================= */
     /* 4. MODALS & OVERLAYS */
@@ -124,7 +142,7 @@
     
     #warnDeleteFile { display: none; margin-top: 10px; padding: 8px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; font-size: 0.85rem; text-align: center; }
 
-    /* --- GIAO DIỆN ĐĂNG NHẬP --- */
+    /* --- LOGIN OVERLAY --- */
     #login-overlay { 
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: #f0fdf4; z-index: 999999; 
@@ -185,7 +203,7 @@
   <div id="accessDeniedBanner" class="overlay-screen" style="display:none;">
     <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.1); text-align:center;">
       <i class="bi bi-shield-lock-fill text-danger" style="font-size: 60px;"></i>
-      <h3 class="fw-bold text-danger mt-3"> BẠN KHÔNG CÓ QUYỀN TRUY CẬP</h3>
+      <h3 class="fw-bold text-danger mt-3">BẠN KHÔNG CÓ QUYỀN TRUY CẬP</h3>
       <p class="text-muted">Xin chào: <b class="text-primary" id="deniedEmailTxt"></b></p>
       <p class="text-muted">Vui lòng liên hệ quản trị viên.</p>
       <button onclick="logoutGoogle()" class="btn btn-sm btn-outline-danger fw-bold mt-2">Đổi tài khoản</button>
@@ -201,8 +219,9 @@
       <div class="dev-badge">
         <div class="dev-avatar"><i class="bi bi-gem"></i></div>
         <div class="dev-info">
+          <span class="dev-role">Developed by</span>
           <span class="dev-name">HOÀNG NGỌC LÂM</span>
-          <span class="dev-role d-block" id="txtUserEmailLog" style="text-transform: none; font-size: 10px; cursor: pointer; text-decoration: underline;" onclick="logoutGoogle()">Đăng xuất</span>
+          <span class="d-none" id="txtUserEmailLog"></span>
         </div>
       </div>
     </div>
@@ -220,6 +239,11 @@
            </span> 
            Chữ Thập Đỏ
         </button>
+      </li>
+      <li class="nav-item ms-auto align-self-center me-2">
+         <button class="btn btn-sm btn-outline-danger fw-bold py-0 px-2" onclick="logoutGoogle()">
+           <i class="bi bi-box-arrow-right"></i> Đăng xuất
+         </button>
       </li>
     </ul>
 
@@ -272,7 +296,7 @@
                 </tr>
               </thead>
               <tbody id="searchTableBody">
-                <tr><td colspan="6" class="text-center text-muted py-5"><i>Vui lòng chọn điều kiện và bấm "Xem"</i></td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-3"><i>Vui lòng chọn điều kiện và bấm "Xem"</i></td></tr>
               </tbody>
             </table>
           </div>
@@ -402,6 +426,8 @@
     // ==========================================================
     // 0. BẢN QUYỀN VÀ AUTHENTICATION (CẬP NHẬT)
     // ==========================================================
+    let isGoogleLoaded = false;
+    let isLoginOverlayVisible = false;
 
     function checkTrialPeriod() {
        return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
@@ -443,11 +469,35 @@
       const storedEmail = sessionStorage.getItem("USER_EMAIL_TC");
       if(storedEmail) {
         window.GLOBAL_EMAIL = storedEmail; 
-        document.getElementById('login-overlay').style.display = 'none'; // Ẩn đi khi đã có phiên
+        document.getElementById('login-overlay').style.display = 'none';
         loadUserContext(storedEmail);
+      } else {
+        document.getElementById('login-overlay').style.display = 'flex';
+        isLoginOverlayVisible = true;
+        renderGoogleButton();
       }
-      // Không cần lệnh else bật display flex ở đây vì nó đã mở mặc định
     });
+
+    function initGoogleAuth() {
+      isGoogleLoaded = true;
+      renderGoogleButton();
+    }
+
+    function renderGoogleButton() {
+      if (isGoogleLoaded && isLoginOverlayVisible) {
+        const id1 = "376040819369-4snobajf9rcspsq8gqts";
+        const id2 = "78sq894kp2l5.apps.googleusercontent.com";
+        
+        google.accounts.id.initialize({
+            client_id: id1 + id2,
+            callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+            document.getElementById("buttonDiv"),
+            { theme: "outline", size: "large", shape: "rectangular", text: "sign_in_with", logo_alignment: "left" }
+        );
+      }
+    }
 
     function decodeJwtResponse(token) {
       let base64Url = token.split('.')[1];
@@ -465,6 +515,7 @@
       window.GLOBAL_EMAIL = email; 
       
       document.getElementById('login-overlay').style.display = 'none';
+      isLoginOverlayVisible = false;
       loadUserContext(email);
     }
 
@@ -488,7 +539,7 @@
 
     function initUI(ctx) {
       document.getElementById('loadingOverlay').style.display = 'none';
-      document.getElementById('txtUserEmailLog').innerText = ctx.email + " (Đăng xuất)";
+      document.getElementById('txtUserEmailLog').innerText = ctx.email;
 
       if (ctx.isBlocked) {
         document.getElementById('accessDeniedBanner').style.display = 'flex';
@@ -572,10 +623,12 @@
     // ==========================================================
     // 3. SEARCH LOGIC
     // ==========================================================
+    
+    // CẬP NHẬT: Đổi py-5 thành py-3 khi xóa dữ liệu
     function clearSearchData() {
        const tbody = document.getElementById('searchTableBody');
        const sumBox = document.getElementById('summaryBox');
-       tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5"><i>Vui lòng bấm "Xem" để tải dữ liệu mới</i></td></tr>';
+       tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3"><i>Vui lòng bấm "Xem" để tải dữ liệu mới</i></td></tr>';
        sumBox.style.display = 'none';
     }
 
@@ -586,12 +639,14 @@
       const tbody = document.getElementById('searchTableBody');
       const sumBox = document.getElementById('summaryBox');
       
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div></td></tr>`;
+      // CẬP NHẬT: Đổi py-5 thành py-3 khi đang tải
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3"><div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div></td></tr>`;
       sumBox.style.display = 'none';
       
       callServer('TC_getThuChiData', {fundCode: fundCode, fromDate: fromDate, toDate: toDate, email: window.GLOBAL_EMAIL}).then(data => {
           if (!data || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-5">Chưa có dữ liệu</td></tr>`;
+            // CẬP NHẬT: Đổi py-5 thành py-3 khi không có dữ liệu
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Chưa có dữ liệu</td></tr>`;
             return;
           }
           let html = ''; let tThu = 0, tChi = 0;
