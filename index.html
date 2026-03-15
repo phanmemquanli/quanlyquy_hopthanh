@@ -88,9 +88,9 @@
     }
     .sum-val { font-weight: 900; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 20px; margin-left: 5px; text-shadow: 0 1px 1px rgba(0,0,0,0.1); }
     
-    /* CẬP NHẬT: SỬA LỖI VIỀN ĐEN BẢNG VÀ KHOẢNG TRỐNG */
-    .table-wrapper { flex-grow: 1; overflow: auto; position: relative; } /* Xóa viền ở wrapper */
-    .table-custom { width: 100%; border-collapse: separate; border-spacing: 0; border: 2px solid #333; } /* Chuyển viền vào trực tiếp table */
+    /* BẢNG TRA CỨU KẺ ĐẬM */
+    .table-wrapper { flex-grow: 1; overflow: auto; position: relative; } 
+    .table-custom { width: 100%; border-collapse: separate; border-spacing: 0; border: 2px solid #333; } 
     
     .table-custom thead th { 
       position: sticky; top: 0; z-index: 100; 
@@ -139,8 +139,6 @@
     
     .upload-box { border: 2px dashed #cbd5e1; padding: 8px; text-align: center; border-radius: 6px; background: #f8fafc; cursor: pointer; transition: 0.2s; }
     .upload-box:hover { border-color: #3b82f6; background: #eff6ff; }
-    
-    #warnDeleteFile { display: none; margin-top: 10px; padding: 8px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; font-size: 0.85rem; text-align: center; }
 
     /* --- LOGIN OVERLAY --- */
     #login-overlay { 
@@ -203,7 +201,7 @@
   <div id="accessDeniedBanner" class="overlay-screen" style="display:none;">
     <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.1); text-align:center;">
       <i class="bi bi-shield-lock-fill text-danger" style="font-size: 60px;"></i>
-      <h3 class="fw-bold text-danger mt-3">BẠN KHÔNG CÓ QUYỀN TRUY CẬP</h3>
+      <h3 class="fw-bold text-danger mt-3">KHÔNG CÓ QUYỀN TRUY CẬP</h3>
       <p class="text-muted">Xin chào: <b class="text-primary" id="deniedEmailTxt"></b></p>
       <p class="text-muted">Vui lòng liên hệ quản trị viên.</p>
       <button onclick="logoutGoogle()" class="btn btn-sm btn-outline-danger fw-bold mt-2">Đổi tài khoản</button>
@@ -213,7 +211,7 @@
   <div class="main-container" id="mainApp" style="display:none;">
     
     <div class="app-header">
-      <div class="school-name">TRƯỜNG TH&THCS HỢP THÀNH</div>
+      <div class="school-name">TRƯỜNG TIỂU HỌC HỢP THÀNH</div>
       <div class="app-title">QUẢN LÝ CÁC QUỸ</div>
       
       <div class="dev-badge">
@@ -364,51 +362,7 @@
     
   </div>
 
-  <div id="upload_modal" class="modal-overlay">
-    <div class="modal-box text-start">
-      <h5 class="text-primary text-center fw-bold mb-3">📁 TẢI FILE</h5>
-      
-      <div class="mb-2">
-        <label class="form-label small">Thư mục:</label>
-        <div class="d-flex gap-1">
-          <select id="folderSelect" class="form-select form-select-sm"><option>⏳...</option></select>
-          <button class="btn btn-sm btn-outline-success" onclick="toggleNewFolderUI()" title="Tạo thư mục mới"><i class="bi bi-folder-plus"></i></button>
-        </div>
-      </div>
-
-      <div id="newFolderArea" style="display:none; margin-bottom:10px; background:#f8fafc; padding:10px; border:1px solid #dee2e6; border-radius:5px;">
-        <div class="d-flex gap-1">
-            <input type="text" id="txtNewFolderName" placeholder="Tên thư mục mới" class="form-control form-control-sm">
-            <button onclick="doCreateNewFolder()" class="btn btn-sm btn-success">Tạo</button>
-            <button onclick="toggleNewFolderUI()" class="btn btn-sm btn-danger">Hủy</button>
-        </div>
-        <div id="createFolderStatus" style="font-size:12px; margin-top:5px;" class="text-danger fw-bold"></div>
-      </div>
-      
-      <div class="mb-2 text-center">
-        <div class="btn-group w-100" role="group">
-          <input type="radio" class="btn-check" name="upMode" id="modeFile" value="file" checked onchange="toggleUpMode()">
-          <label class="btn btn-outline-primary btn-sm" for="modeFile">File lẻ</label>
-          <input type="radio" class="btn-check" name="upMode" id="modeFolder" value="folder" onchange="toggleUpMode()">
-          <label class="btn btn-outline-primary btn-sm" for="modeFolder">Thư mục</label>
-        </div>
-      </div>
-      
-      <div class="upload-box mb-2" onclick="document.getElementById('fileIn').click()">
-        <span id="fileText" class="small">Chọn file</span>
-        <input type="file" id="fileIn" style="display:none" onchange="fileSel(this)">
-      </div>
-      
-      <div id="warnDeleteFile">⚠️ Đã có chứng từ. Nếu tải tiếp, file cũ sẽ bị xóa!</div>
-
-      <div id="upStatus" class="text-center small fw-bold mb-2 text-primary" style="height:20px"></div>
-      
-      <div class="d-flex gap-2">
-        <button id="uploadBtn" class="btn btn-sm btn-success flex-grow-1" onclick="doUpload()" disabled>TẢI LÊN</button>
-        <button class="btn btn-sm btn-secondary" onclick="closeUploadModal()">Hủy</button>
-      </div>
-    </div>
-  </div>
+  <div id="modal-upload-container"></div>
 
   <div id="notify_modal" class="modal-overlay" style="z-index: 10006;">
       <div class="modal-box text-center">
@@ -424,13 +378,13 @@
 
   <script>
     // ==========================================================
-    // 0. BẢN QUYỀN VÀ AUTHENTICATION (CẬP NHẬT)
+    // 0. BẢN QUYỀN VÀ AUTHENTICATION
     // ==========================================================
     let isGoogleLoaded = false;
     let isLoginOverlayVisible = false;
 
     function checkTrialPeriod() {
-       return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
+      // return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
       const trialStartDate = new Date(2026, 1, 7); // 07/02/2026
       const trialDays = 14;
       const trialExpiryDate = new Date(trialStartDate);
@@ -466,6 +420,15 @@
 
       document.getElementById('loadingOverlay').style.display = 'none';
 
+      // CẬP NHẬT: MÃ FETCH NỘI DUNG TỪ FILE MODAL_UPLOAD.HTML TRÊN GITHUB VÀO CONTAINER
+      fetch('./Modal_Upload.html?v=' + new Date().getTime())
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('modal-upload-container').innerHTML = html;
+            executeScripts(document.getElementById('modal-upload-container'));
+        })
+        .catch(err => console.error('Lỗi tải file Modal:', err));
+
       const storedEmail = sessionStorage.getItem("USER_EMAIL_TC");
       if(storedEmail) {
         window.GLOBAL_EMAIL = storedEmail; 
@@ -477,6 +440,17 @@
         renderGoogleButton();
       }
     });
+
+    // Hàm hỗ trợ chạy các thẻ <script> bên trong file HTML vừa tải về
+    function executeScripts(element) {
+        const scripts = element.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+    }
 
     function initGoogleAuth() {
       isGoogleLoaded = true;
@@ -534,8 +508,6 @@
     // 1. GLOBAL VARIABLES & INIT
     // ==========================================================
     let CURRENT_FUND_CODE = '';
-    let CURR_FILES = [];
-    let LINK_CAN_XOA = ""; 
 
     function initUI(ctx) {
       document.getElementById('loadingOverlay').style.display = 'none';
@@ -623,8 +595,6 @@
     // ==========================================================
     // 3. SEARCH LOGIC
     // ==========================================================
-    
-    // CẬP NHẬT: Đổi py-5 thành py-3 khi xóa dữ liệu
     function clearSearchData() {
        const tbody = document.getElementById('searchTableBody');
        const sumBox = document.getElementById('summaryBox');
@@ -639,13 +609,11 @@
       const tbody = document.getElementById('searchTableBody');
       const sumBox = document.getElementById('summaryBox');
       
-      // CẬP NHẬT: Đổi py-5 thành py-3 khi đang tải
       tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3"><div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div></td></tr>`;
       sumBox.style.display = 'none';
       
       callServer('TC_getThuChiData', {fundCode: fundCode, fromDate: fromDate, toDate: toDate, email: window.GLOBAL_EMAIL}).then(data => {
           if (!data || data.length === 0) {
-            // CẬP NHẬT: Đổi py-5 thành py-3 khi không có dữ liệu
             tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Chưa có dữ liệu</td></tr>`;
             return;
           }
@@ -691,7 +659,7 @@
       document.getElementById('i_proof_url').value = '';
       document.getElementById('i_proof_name').value = '';
       
-      loadFolders();
+      if(typeof loadFolders === 'function') loadFolders();
     }
 
     function submitForm() {
@@ -727,134 +695,6 @@
       });
     }
 
-    // ==========================================================
-    // 5. UPLOAD & DELETE LOGIC (CORE)
-    // ==========================================================
-    function openUploadModal() { 
-       LINK_CAN_XOA = document.getElementById('i_proof_url').value || "";
-       if(LINK_CAN_XOA) document.getElementById('warnDeleteFile').style.display = 'block';
-       else document.getElementById('warnDeleteFile').style.display = 'none';
-       document.getElementById('upload_modal').style.display = 'flex'; 
-       loadFolders();
-    }
-
-    function closeUploadModal() {
-       document.getElementById('upload_modal').style.display = 'none';
-       document.getElementById('upStatus').innerText = "";
-       document.getElementById('fileIn').value = "";
-       document.getElementById('fileText').innerText = "Chọn file";
-       CURR_FILES = [];
-       document.getElementById('uploadBtn').disabled = true;
-       document.getElementById('modeFile').checked = true;
-       toggleUpMode();
-    }
-
-    function loadFolders() {
-       const s = document.getElementById('folderSelect');
-       s.innerHTML = `<option value="">⏳ Đang tải...</option>`;
-       callServer('TC_getSubFolders', {email: window.GLOBAL_EMAIL}).then(res => {
-         s.innerHTML = `<option value="">-- Thư mục gốc --</option>`;
-         if(res) {
-           res.forEach(f => { s.add(new Option(f.name, f.id)); });
-         }
-       }).catch(err => console.error(err));
-    }
-
-    function toggleUpMode() {
-       const mode = document.querySelector('input[name="upMode"]:checked').value;
-       const inp = document.getElementById('fileIn');
-       inp.value = ""; document.getElementById('fileText').innerText = "Chọn file";
-       document.getElementById('uploadBtn').disabled = true; CURR_FILES = [];
-       if(LINK_CAN_XOA) document.getElementById('warnDeleteFile').style.display = 'block';
-       
-       if (mode === 'folder') { 
-         inp.setAttribute('webkitdirectory', '');
-         inp.setAttribute('directory', ''); inp.setAttribute('multiple', ''); 
-       } else { 
-         inp.removeAttribute('webkitdirectory'); inp.removeAttribute('directory'); inp.removeAttribute('multiple');
-       }
-    }
-
-    function fileSel(input) {
-       if (input.files.length > 0) {
-         CURR_FILES = input.files;
-         const mode = document.querySelector('input[name="upMode"]:checked').value;
-         if (mode === 'folder') document.getElementById('fileText').innerText = `📂 ${CURR_FILES[0].webkitRelativePath.split('/')[0]} (${CURR_FILES.length} file)`;
-         else document.getElementById('fileText').innerText = "📄 " + CURR_FILES[0].name;
-         document.getElementById('uploadBtn').disabled = false;
-         
-         document.getElementById('uploadBtn').classList.add('active');
-         document.getElementById('uploadBtn').style.opacity = '1';
-         document.getElementById('uploadBtn').style.pointerEvents = 'auto';
-       }
-    }
-    
-    function doUpload() {
-       if (!CURR_FILES || CURR_FILES.length === 0) return;
-       const btn = document.getElementById('uploadBtn'), st = document.getElementById('upStatus');
-       const fId = document.getElementById('folderSelect').value; 
-       const mode = document.querySelector('input[name="upMode"]:checked').value;
-       
-       btn.classList.remove('active');
-       btn.style.opacity = '0.5';
-       btn.style.pointerEvents = 'none';
-       st.style.color = "blue"; st.innerText = "⏳ Đang xử lý...";
-
-       if (mode === 'file') {
-         const file = CURR_FILES[0];
-         const r = new FileReader();
-         r.onload = e => {
-           const b64 = e.target.result.split(',')[1];
-           callServer('TC_uploadProof', {base64Data: b64, fileName: file.name, mimeType: file.type, targetFolderId: fId, oldUrl: LINK_CAN_XOA, email: window.GLOBAL_EMAIL})
-             .then(res => { handleUpResult(res, st, btn); })
-             .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
-         };
-         r.readAsDataURL(file);
-
-       } else { 
-         const folderName = CURR_FILES[0].webkitRelativePath.split('/')[0];
-         let filesData = []; let count = 0;
-         st.innerText = `⏳ Đang đọc ${CURR_FILES.length} file...`;
-         
-         Array.from(CURR_FILES).forEach(file => {
-            const r = new FileReader();
-            r.onload = e => {
-               filesData.push({ fileName: file.name, mimeType: file.type, data: e.target.result.split(',')[1] });
-               count++;
-               if (count === CURR_FILES.length) {
-                  st.innerText = "⏳ Đang tải lên server...";
-                  callServer('TC_uploadFolderProof', {targetFolderId: fId, folderName: folderName, filesData: filesData, oldUrl: LINK_CAN_XOA, email: window.GLOBAL_EMAIL})
-                    .then(res => { handleUpResult(res, st, btn); })
-                    .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
-               }
-            };
-            r.readAsDataURL(file);
-         });
-       }
-    }
-
-    function handleUpResult(res, st, btn) {
-       if (res.success) {
-         st.style.color = "green";
-         st.innerText = "✅ Tải lên thành công"; 
-         
-         document.getElementById('i_proof_url').value = res.url;
-         document.getElementById('i_proof_name').value = res.name;
-         
-         document.getElementById('preview-text').innerText = "Đã tải xong";
-         document.getElementById('btn-preview').href = res.url;
-         document.getElementById('preview-area').style.display = 'block';
-         
-         setTimeout(closeUploadModal, 1000);
-       } else {
-         st.style.color = "red";
-         st.innerText = "❌ " + (res.msg || "Lỗi không xác định"); 
-         btn.classList.add('active');
-         btn.style.opacity = '1';
-         btn.style.pointerEvents = 'auto';
-       }
-    }
-
     function deleteCurrentProof() {
        const url = document.getElementById('i_proof_url').value;
        if(!url) return;
@@ -878,29 +718,6 @@
           area.style.opacity = '1';
           showNotify("Lỗi xóa file: " + err.message, "error");
        });
-    }
-    
-    function toggleNewFolderUI(){ var a=document.getElementById('newFolderArea'); a.style.display=a.style.display==='none'?'block':'none'; }
-    function doCreateNewFolder(){ 
-      var n=document.getElementById('txtNewFolderName').value;
-      var p=document.getElementById('folderSelect').value; 
-      if(!n) return; 
-      document.getElementById('createFolderStatus').innerText = "⏳ Đang tạo...";
-      
-      callServer('TC_createNewFolder', {parentId: p, name: n, email: window.GLOBAL_EMAIL}).then(res => { 
-         if(res.success){ 
-            var s=document.getElementById('folderSelect'); 
-            s.add(new Option(res.name, res.id)); 
-            s.value=res.id; 
-            document.getElementById('txtNewFolderName').value = "";
-            document.getElementById('createFolderStatus').innerText = "";
-            toggleNewFolderUI(); 
-         } else {
-            document.getElementById('createFolderStatus').innerText = "❌ Lỗi: " + res.msg;
-         }
-      }).catch(err => {
-          document.getElementById('createFolderStatus').innerText = "❌ Lỗi: " + err.message;
-      });
     }
   </script>
 </body>
