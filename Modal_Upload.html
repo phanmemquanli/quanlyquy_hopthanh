@@ -83,7 +83,7 @@
 <script>
   var CURR_FILES = [];
   var LINK_CAN_XOA = ""; 
-  var ROOT_ID = '1HgvZSYDQWQDj6ElJF4ei9HJWwHB6IEYt';
+  var ROOT_ID = '1HgvZSYDQWQDj6ElJF4ei9HJWwHB6IEYt'; 
 
   function openUploadModal() { 
      LINK_CAN_XOA = document.getElementById('i_proof_url').value || "";
@@ -193,6 +193,20 @@
      btn.disabled = true;
      st.style.color = "blue"; 
      
+     // ----------------------------------------------------
+     // CẬP NHẬT CHUẨN: XÓA NHIỀU FILE CŨ THEO VÒNG LẶP TRÊN FRONTEND
+     // ----------------------------------------------------
+     if (urlToDel) {
+         st.innerText = "⏳ Đang dọn dẹp các tài liệu cũ trên Drive...";
+         const oldUrls = urlToDel.split(',');
+         for(let i = 0; i < oldUrls.length; i++) {
+             let u = oldUrls[i].trim();
+             if(u) {
+                 try { await callServer('TC_deleteProof', {fileUrl: u, email: window.GLOBAL_EMAIL}); } catch(e) {}
+             }
+         }
+     }
+     
      if (mode === 'file') {
          let finalUrls = [];
          let finalNames = [];
@@ -203,11 +217,10 @@
              
              try {
                  let b64 = await readFileAsBase64(file);
-                 let currentUrlToDel = (i === 0) ? urlToDel : ""; 
-                 
+                 // Đã xóa thủ công ở trên rồi, nên set oldUrl="" để Backend không cần xóa nữa
                  let res = await callServer('TC_uploadProof', {
                      base64Data: b64, fileName: file.name, mimeType: file.type, 
-                     targetFolderId: fId, oldUrl: currentUrlToDel, email: window.GLOBAL_EMAIL
+                     targetFolderId: fId, oldUrl: "", email: window.GLOBAL_EMAIL
                  });
                  
                  if (res.success) {
@@ -224,7 +237,6 @@
          }
          
          st.style.color = "green"; st.innerText = "✅ Tải lên thành công!";
-         // GỌI HÀM Ở INDEX.HTML ĐỂ CẬP NHẬT GIAO DIỆN
          if (typeof window.returnLinkToMain === 'function') {
              window.returnLinkToMain(finalUrls.join(', '), finalNames.join(' + '), wMode);
          }
@@ -242,7 +254,8 @@
              count++;
              if (count === CURR_FILES.length) {
                 st.innerText = "⏳ Đang gửi thư mục lên Drive trung tâm...";
-                callServer('TC_uploadFolderProof', {targetFolderId: fId, folderName: folderName, filesData: filesData, oldUrl: urlToDel, email: window.GLOBAL_EMAIL})
+                // Truyền oldUrl="" vì đã xóa thủ công ở trên
+                callServer('TC_uploadFolderProof', {targetFolderId: fId, folderName: folderName, filesData: filesData, oldUrl: "", email: window.GLOBAL_EMAIL})
                   .then(res => { 
                       if(res.success) {
                           st.style.color = "green"; st.innerText = "✅ Tải lên thành công!";
