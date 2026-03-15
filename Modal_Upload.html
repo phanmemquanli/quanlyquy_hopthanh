@@ -12,7 +12,6 @@
   #uploadBtn.active:hover { background: #047857; }
   .close-up { background: #ef4444; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
   .close-up:hover { background: #dc2626; }
-  #warnDelete { display:none; color:#d97706; font-size:13px; text-align:center; margin-bottom:5px; font-weight:bold; background: #fffbeb; padding: 5px; border-radius: 4px; border: 1px dashed #d97706; }
   
   .btn-create-folder { border: 1px solid #ccc; background: #f0fdf4; color: #16a34a; padding: 0 10px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 16px; display:flex; justify-content:center; align-items:center; transition: 0.2s; }
   .btn-create-folder:hover { background: #dcfce7; }
@@ -56,8 +55,18 @@
       </div>
     </div>
 
-    <div id="warnDelete" style="display:none; color:#d97706; font-size:13px; text-align:center; margin-bottom:5px; font-weight:bold; background: #fffbeb; padding: 5px; border-radius: 4px; border: 1px dashed #d97706;">
-       ⚠️ Đã có chứng từ. Nếu tải tiếp, file cũ trên hệ thống sẽ bị thay thế!
+    <div id="boxWriteMode" style="display:none; background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px dashed #d97706; margin-bottom: 10px;">
+      <div style="color:#d97706; font-size:13px; text-align:center; font-weight:bold; margin-bottom:8px;">
+         ⚠️ Đã có chứng từ đính kèm trước đó. Bạn muốn:
+      </div>
+      <div style="display:flex; gap:20px; justify-content:center; font-weight:bold; font-size: 14px;">
+        <label style="cursor:pointer; color:#dc2626;">
+           <input type="radio" name="wMode" value="replace" checked> 🔄 Thay thế (Xóa cũ)
+        </label>
+        <label style="cursor:pointer; color:#059669;">
+           <input type="radio" name="wMode" value="append"> ➕ Chèn thêm (Giữ cũ)
+        </label>
+      </div>
     </div>
 
     <div id="upStatus" style="text-align:center; font-weight:bold; min-height:20px; font-size:0.9rem; margin-top:5px;"></div>
@@ -76,8 +85,11 @@
 
   function openUploadModal() { 
      LINK_CAN_XOA = document.getElementById('i_proof_url').value || "";
-     if(LINK_CAN_XOA) document.getElementById('warnDelete').style.display = 'block';
-     else document.getElementById('warnDelete').style.display = 'none';
+     if(LINK_CAN_XOA) {
+         document.getElementById('boxWriteMode').style.display = 'block';
+     } else {
+         document.getElementById('boxWriteMode').style.display = 'none';
+     }
      document.getElementById('upload_modal').style.display = 'flex'; 
      loadFolders();
   }
@@ -87,7 +99,8 @@
      document.getElementById('upStatus').innerText = "";
      document.getElementById('fileIn').value = "";
      document.getElementById('fileText').innerHTML = "Nhấn vào đây để chọn file";
-     document.getElementById('warnDelete').style.display = 'none';
+     document.getElementById('boxWriteMode').style.display = 'none';
+     document.querySelector('input[name="wMode"][value="replace"]').checked = true;
      CURR_FILES = [];
      document.getElementById('uploadBtn').classList.remove('active');
      document.getElementById('uploadBtn').disabled = true;
@@ -145,6 +158,10 @@
      const fId = document.getElementById('folderSelect').value || ROOT_ID; 
      const mode = document.querySelector('input[name="upMode"]:checked').value;
      
+     // Xác định chế độ Ghi đè hay Chèn thêm
+     const wMode = LINK_CAN_XOA ? document.querySelector('input[name="wMode"]:checked').value : 'replace';
+     const urlToDel = (wMode === 'replace') ? LINK_CAN_XOA : "";
+     
      btn.classList.remove('active');
      btn.disabled = true;
      st.style.color = "blue"; st.innerText = "⏳ Đang xử lý tải lên...";
@@ -154,8 +171,8 @@
        const r = new FileReader();
        r.onload = e => {
          const b64 = e.target.result.split(',')[1];
-         callServer('TC_uploadProof', {base64Data: b64, fileName: file.name, mimeType: file.type, targetFolderId: fId, oldUrl: LINK_CAN_XOA, email: window.GLOBAL_EMAIL})
-           .then(res => { handleUpResult(res, st, btn); })
+         callServer('TC_uploadProof', {base64Data: b64, fileName: file.name, mimeType: file.type, targetFolderId: fId, oldUrl: urlToDel, email: window.GLOBAL_EMAIL})
+           .then(res => { handleUpResult(res, st, btn, wMode); })
            .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
        };
        r.readAsDataURL(file);
@@ -172,8 +189,8 @@
              count++;
              if (count === CURR_FILES.length) {
                 st.innerText = "⏳ Đang gửi dữ liệu lên thư mục trung tâm...";
-                callServer('TC_uploadFolderProof', {targetFolderId: fId, folderName: folderName, filesData: filesData, oldUrl: LINK_CAN_XOA, email: window.GLOBAL_EMAIL})
-                  .then(res => { handleUpResult(res, st, btn); })
+                callServer('TC_uploadFolderProof', {targetFolderId: fId, folderName: folderName, filesData: filesData, oldUrl: urlToDel, email: window.GLOBAL_EMAIL})
+                  .then(res => { handleUpResult(res, st, btn, wMode); })
                   .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
              }
           };
@@ -182,18 +199,27 @@
      }
   }
 
-  function handleUpResult(res, st, btn) {
+  function handleUpResult(res, st, btn, wMode = 'replace') {
      if (res.success) {
        st.style.color = "green";
        st.innerText = "✅ Tải lên thành công"; 
        
-       document.getElementById('i_proof_url').value = res.url;
-       document.getElementById('i_proof_name').value = res.name;
+       const oldUrl = document.getElementById('i_proof_url').value;
+       const oldName = document.getElementById('i_proof_name').value;
+       
+       // Nối link nếu chọn Chèn Thêm, ngược lại Ghi đè
+       if (wMode === 'append' && oldUrl) {
+          document.getElementById('i_proof_url').value = oldUrl + ", " + res.url;
+          document.getElementById('i_proof_name').value = oldName + " + " + res.name;
+       } else {
+          document.getElementById('i_proof_url').value = res.url;
+          document.getElementById('i_proof_name').value = res.name;
+       }
        
        document.getElementById('preview-text').innerText = "Đã tải xong";
        document.getElementById('btn-preview').href = res.url;
        document.getElementById('preview-area').style.display = 'block';
-       document.getElementById('warnDelete').style.display = 'none';
+       document.getElementById('boxWriteMode').style.display = 'none';
        
        setTimeout(closeUploadModal, 1000);
      } else {
