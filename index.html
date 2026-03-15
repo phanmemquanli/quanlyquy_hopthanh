@@ -335,13 +335,13 @@
                 <div class="upload-box" onclick="openUploadModal()">
                   <i class="bi bi-paperclip text-primary"></i> <span id="file-label" class="small text-muted">Đính kèm file</span>
                 </div>
+                
                 <div id="preview-area" class="mt-2 text-center" style="display:none;">
-                   <div class="d-flex align-items-center justify-content-center gap-2">
-                      <a id="btn-preview" href="#" target="_blank" class="text-success small fw-bold text-decoration-none">
-                        <i class="bi bi-check-circle-fill"></i> <span id="preview-text">Đã tải xong</span>
-                      </a>
-                      <i class="bi bi-x-circle-fill text-danger" style="cursor:pointer; font-size:1.1rem;" title="Gỡ bỏ" onclick="deleteCurrentProof()"></i>
-                   </div>
+                   <div id="preview-links-container" class="d-flex flex-column align-items-center justify-content-center gap-1 mb-2">
+                      </div>
+                   <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 mt-1" title="Gỡ bỏ toàn bộ" onclick="deleteCurrentProof()">
+                      <i class="bi bi-trash"></i> Xóa toàn bộ file
+                   </button>
                 </div>
                 <input type="hidden" id="i_proof_url"><input type="hidden" id="i_proof_name">
               </div>
@@ -384,8 +384,8 @@
     let isLoginOverlayVisible = false;
 
     function checkTrialPeriod() {
-       return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
-      const trialStartDate = new Date(2026, 1, 7); // 07/02/2026
+      // return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
+      const trialStartDate = new Date(2026, 1, 7); 
       const trialDays = 14;
       const trialExpiryDate = new Date(trialStartDate);
       trialExpiryDate.setDate(trialStartDate.getDate() + trialDays);
@@ -420,7 +420,7 @@
 
       document.getElementById('loadingOverlay').style.display = 'none';
 
-      // CẬP NHẬT: MÃ FETCH NỘI DUNG TỪ FILE MODAL_UPLOAD.HTML TRÊN GITHUB VÀO CONTAINER
+      // FETCH MODAL_UPLOAD.HTML TỪ GITHUB
       fetch('./Modal_Upload.html?v=' + new Date().getTime())
         .then(response => response.text())
         .then(html => {
@@ -439,9 +439,32 @@
         isLoginOverlayVisible = true;
         renderGoogleButton();
       }
+
+      // TỰ ĐỘNG BẮT SỰ KIỆN KHI UPDATE LINK CHỨNG TỪ (Để render danh sách file Preview)
+      setInterval(() => {
+          const urlInput = document.getElementById('i_proof_url');
+          const previewArea = document.getElementById('preview-area');
+          if (previewArea && previewArea.style.display === 'block' && urlInput && urlInput.value && !urlInput.dataset.rendered) {
+              const urls = urlInput.value.split(',');
+              const previewContainer = document.getElementById('preview-links-container');
+              if (previewContainer) {
+                  let html = '';
+                  urls.forEach((u, i) => {
+                      if (u.trim()) {
+                          let fileName = `File đính kèm ${i + 1}`;
+                          html += `<a href="${u.trim()}" target="_blank" class="text-success small fw-bold text-decoration-none d-block"><i class="bi bi-check-circle-fill"></i> ${fileName}</a>`;
+                      }
+                  });
+                  previewContainer.innerHTML = html;
+                  urlInput.dataset.rendered = "true";
+              }
+          } else if (urlInput && !urlInput.value) {
+              urlInput.dataset.rendered = ""; // Reset
+          }
+      }, 500);
+
     });
 
-    // Hàm hỗ trợ chạy các thẻ <script> bên trong file HTML vừa tải về
     function executeScripts(element) {
         const scripts = element.querySelectorAll('script');
         scripts.forEach(oldScript => {
@@ -623,8 +646,21 @@
              const sThu = r.thu ? formatMoney(r.thu) : '';
              const sChi = r.chi ? formatMoney(r.chi) : '';
              const badge = (r.type === 'Thu') ? '<span class="badge bg-success">Thu</span>' : '<span class="badge bg-danger">Chi</span>';
-             let link = r.link ? `<a href="${r.link}" target="_blank" class="text-primary text-decoration-none"><i class="bi bi-paperclip"></i> Xem</a>` : '';
-             html += `<tr><td>${r.date}</td><td class="text-center">${badge}</td><td>${r.desc}</td><td class="amt-col income">${sThu}</td><td class="amt-col expense">${sChi}</td><td class="text-center">${link}</td></tr>`;
+             
+             // CẬP NHẬT: XỬ LÝ CHỨNG TỪ MULTI-LINK CHO BẢNG TRA CỨU
+             let linkHtml = '';
+             if (r.link) {
+                 let links = String(r.link).split(',');
+                 links.forEach((lk, idx) => {
+                     let cleanLink = lk.trim();
+                     if (cleanLink) {
+                         let label = links.length > 1 ? `Xem (${idx + 1})` : 'Xem';
+                         linkHtml += `<div class="mb-1"><a href="${cleanLink}" target="_blank" class="text-primary text-decoration-none fw-bold" style="font-size:14px; white-space:nowrap;"><i class="bi bi-paperclip"></i> ${label}</a></div>`;
+                     }
+                 });
+             }
+             
+             html += `<tr><td>${r.date}</td><td class="text-center">${badge}</td><td>${r.desc}</td><td class="amt-col income">${sThu}</td><td class="amt-col expense">${sChi}</td><td class="text-center align-middle">${linkHtml}</td></tr>`;
           });
           tbody.innerHTML = html;
           document.getElementById('sumThu').innerText = formatMoney(tThu);
@@ -699,7 +735,7 @@
        const url = document.getElementById('i_proof_url').value;
        if(!url) return;
        
-       if(!confirm("Bạn có chắc chắn muốn xóa file đính kèm này?")) return;
+       if(!confirm("Bạn có chắc chắn muốn xóa tất cả file đính kèm này?")) return;
        
        const area = document.getElementById('preview-area');
        area.style.opacity = '0.5';
