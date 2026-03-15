@@ -8,7 +8,6 @@
   .up-dropzone:hover { background: #eff6ff; }
   .up-dropzone.has-file { border-color: #16a34a; background-color: #dcfce7; border-style: solid; }
   
-  /* Nút bấm theo hình ảnh */
   #uploadBtn { width: 100%; padding: 12px; background: #7bc4a6; color: white; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; opacity: 0.5; pointer-events: none; margin-top: 10px; transition: 0.2s; font-size: 16px; }
   #uploadBtn.active { opacity: 1; pointer-events: auto; }
   #uploadBtn.active:hover { background: #62ab8e; }
@@ -84,7 +83,7 @@
 <script>
   var CURR_FILES = [];
   var LINK_CAN_XOA = ""; 
-  var ROOT_ID = '1HgvZSYDQWQDj6ElJF4ei9HJWwHB6IEYt'; // Thư mục trung tâm của Tài trợ
+  var ROOT_ID = '1HgvZSYDQWQDj6ElJF4ei9HJWwHB6IEYt';
 
   function openUploadModal() { 
      LINK_CAN_XOA = document.getElementById('i_proof_url').value || "";
@@ -172,7 +171,6 @@
      }
   }
 
-  // Hàm đọc file ra chuỗi base64 (Hỗ trợ upload tuần tự)
   function readFileAsBase64(file) {
       return new Promise((resolve, reject) => {
           const r = new FileReader();
@@ -195,7 +193,6 @@
      btn.disabled = true;
      st.style.color = "blue"; 
      
-     // TRƯỜNG HỢP 1: TẢI FILE LẺ (1 FILE HOẶC NHIỀU FILE)
      if (mode === 'file') {
          let finalUrls = [];
          let finalNames = [];
@@ -206,8 +203,7 @@
              
              try {
                  let b64 = await readFileAsBase64(file);
-                 // LƯU Ý: Chỉ gửi lệnh xóa file cũ ở lần upload đầu tiên để tránh lỗi
-                 let currentUrlToDel = (i === 0) ? urlToDel : "";
+                 let currentUrlToDel = (i === 0) ? urlToDel : ""; 
                  
                  let res = await callServer('TC_uploadProof', {
                      base64Data: b64, fileName: file.name, mimeType: file.type, 
@@ -221,21 +217,20 @@
                      throw new Error(res.msg);
                  }
              } catch (err) {
-                 handleUpResult({success: false, msg: err.message}, st, btn);
-                 return; // Dừng lại nếu có lỗi
+                 st.style.color = "red"; st.innerText = "❌ Lỗi: " + err.message;
+                 btn.classList.add('active'); btn.disabled = false;
+                 return;
              }
          }
          
-         // Nếu chạy hết vòng lặp thành công
-         handleUpResult({
-             success: true, 
-             url: finalUrls.join(", "), 
-             name: finalNames.join(" + ")
-         }, st, btn, wMode);
+         st.style.color = "green"; st.innerText = "✅ Tải lên thành công!";
+         // GỌI HÀM Ở INDEX.HTML ĐỂ CẬP NHẬT GIAO DIỆN
+         if (typeof window.returnLinkToMain === 'function') {
+             window.returnLinkToMain(finalUrls.join(', '), finalNames.join(' + '), wMode);
+         }
+         setTimeout(closeUploadModal, 1000);
 
-     } 
-     // TRƯỜNG HỢP 2: TẢI CẢ THƯ MỤC
-     else { 
+     } else { 
        const folderName = CURR_FILES[0].webkitRelativePath.split('/')[0];
        let filesData = []; let count = 0;
        st.innerText = `⏳ Đang nén ${CURR_FILES.length} file trong thư mục...`;
@@ -248,44 +243,26 @@
              if (count === CURR_FILES.length) {
                 st.innerText = "⏳ Đang gửi thư mục lên Drive trung tâm...";
                 callServer('TC_uploadFolderProof', {targetFolderId: fId, folderName: folderName, filesData: filesData, oldUrl: urlToDel, email: window.GLOBAL_EMAIL})
-                  .then(res => { handleUpResult(res, st, btn, wMode); })
-                  .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
+                  .then(res => { 
+                      if(res.success) {
+                          st.style.color = "green"; st.innerText = "✅ Tải lên thành công!";
+                          if (typeof window.returnLinkToMain === 'function') {
+                              window.returnLinkToMain(res.url, res.name, wMode);
+                          }
+                          setTimeout(closeUploadModal, 1000);
+                      } else {
+                          st.style.color = "red"; st.innerText = "❌ " + res.msg;
+                          btn.classList.add('active'); btn.disabled = false;
+                      }
+                  })
+                  .catch(err => { 
+                      st.style.color = "red"; st.innerText = "❌ " + err.message;
+                      btn.classList.add('active'); btn.disabled = false;
+                  });
              }
           };
           r.readAsDataURL(file);
        });
-     }
-  }
-
-  function handleUpResult(res, st, btn, wMode = 'replace') {
-     if (res.success) {
-       st.style.color = "green";
-       st.innerText = "✅ Tải lên thành công"; 
-       
-       const oldUrl = document.getElementById('i_proof_url').value;
-       const oldName = document.getElementById('i_proof_name').value;
-       
-       // Gộp link nếu chọn Chèn Thêm, ngược lại Thay thế
-       if (wMode === 'append' && oldUrl) {
-          document.getElementById('i_proof_url').value = oldUrl + ", " + res.url;
-          document.getElementById('i_proof_name').value = oldName + " + " + res.name;
-       } else {
-          document.getElementById('i_proof_url').value = res.url;
-          document.getElementById('i_proof_name').value = res.name;
-       }
-       
-       document.getElementById('preview-text').innerText = "Đã tải xong";
-       // Nếu có nhiều link, chỉ lấy link đầu tiên gán vào thẻ <a> để xem trước
-       document.getElementById('btn-preview').href = res.url.split(',')[0];
-       document.getElementById('preview-area').style.display = 'block';
-       document.getElementById('warnDelete').style.display = 'none';
-       
-       setTimeout(closeUploadModal, 1000);
-     } else {
-       st.style.color = "red";
-       st.innerText = "❌ " + (res.msg || "Lỗi không xác định"); 
-       btn.classList.add('active');
-       btn.disabled = false;
      }
   }
 
