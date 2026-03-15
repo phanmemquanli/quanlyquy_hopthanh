@@ -208,7 +208,7 @@
   <div class="main-container" id="mainApp" style="display:none;">
     
     <div class="app-header">
-      <div class="school-name">TRƯỜNG TH&THCS HỢP THÀNH</div>
+      <div class="school-name">TRƯỜNG TIỂU HỌC HỢP THÀNH</div>
       <div class="app-title">QUẢN LÝ CÁC QUỸ</div>
       
       <div class="dev-badge">
@@ -381,7 +381,7 @@
     let isLoginOverlayVisible = false;
 
     function checkTrialPeriod() {
-        return true; // <-- BỎ DẤU CHÉO (//) ĐỂ TẮT TÍNH NĂNG GIỚI HẠN THỜI GIAN
+      // return true; // <--- BỎ DẤU CHÉO (//) ĐỂ TẮT TÍNH NĂNG GIỚI HẠN THỜI GIAN
       const trialStartDate = new Date(2026, 1, 7); 
       const trialDays = 14;
       const trialExpiryDate = new Date(trialStartDate);
@@ -466,7 +466,6 @@
             urls.forEach((u, i) => {
                 let cleanLink = u.trim();
                 if (cleanLink) {
-                    // CẬP NHẬT: Thay đổi nhãn hiển thị thành "Chứng từ"
                     let fileName = urls.length > 1 ? `📄 Chứng từ đính kèm ${i + 1}` : `📄 Chứng từ đính kèm`;
                     html += `<a href="${cleanLink}" target="_blank" class="text-success fs-6 fw-bold text-decoration-none d-block mb-1"><i class="bi bi-check-circle-fill"></i> ${fileName}</a>`;
                 }
@@ -661,14 +660,12 @@
              const sChi = r.chi ? formatMoney(r.chi) : '';
              const badge = (r.type === 'Thu') ? '<span class="badge bg-success">Thu</span>' : '<span class="badge bg-danger">Chi</span>';
              
-             // CẬP NHẬT: XỬ LÝ CHỨNG TỪ MULTI-LINK CHO BẢNG TRA CỨU
              let linkHtml = '';
              if (r.link) {
                  let links = String(r.link).split(',');
                  links.forEach((lk, idx) => {
                      let cleanLink = lk.trim();
                      if (cleanLink) {
-                         // CẬP NHẬT: Thay đổi nhãn hiển thị thành "Chứng từ"
                          let label = links.length > 1 ? `Chứng từ (${idx + 1})` : 'Chứng từ';
                          linkHtml += `<div class="mb-1"><a href="${cleanLink}" target="_blank" class="text-primary text-decoration-none fw-bold" style="font-size:14px; white-space:nowrap;"><i class="bi bi-paperclip"></i> ${label}</a></div>`;
                      }
@@ -706,7 +703,6 @@
       document.getElementById('i_date').value = getTodayString();
       document.getElementById('i_desc').style.height = '32px';
       
-      // Xóa form đính kèm
       document.getElementById('i_proof_url').value = '';
       document.getElementById('i_proof_name').value = '';
       renderPreviewLinks(); 
@@ -747,29 +743,43 @@
       });
     }
 
-    function deleteCurrentProof() {
-       const url = document.getElementById('i_proof_url').value;
-       if(!url) return;
+    // CẬP NHẬT LẠI HÀM XÓA: Hỗ trợ xóa hàng loạt file trên Drive
+    async function deleteCurrentProof() {
+       const urlStr = document.getElementById('i_proof_url').value;
+       if(!urlStr) return;
        
-       if(!confirm("Bạn có chắc chắn muốn xóa tất cả file đính kèm này?")) return;
+       if(!confirm("Bạn có chắc chắn muốn xóa toàn bộ file đính kèm này khỏi hệ thống?")) return;
        
        const area = document.getElementById('preview-area');
        area.style.opacity = '0.5';
        
-       callServer('TC_deleteProof', {fileUrl: url, email: window.GLOBAL_EMAIL}).then(res => {
-          area.style.opacity = '1';
-          if(res.success) {
-             document.getElementById('i_proof_url').value = '';
-             document.getElementById('i_proof_name').value = '';
-             renderPreviewLinks();
-             showNotify("Đã xóa file đính kèm.", "success");
-          } else {
-             showNotify("Lỗi xóa file: " + res.msg, "error");
-          }
-       }).catch(err => {
-          area.style.opacity = '1';
-          showNotify("Lỗi xóa file: " + err.message, "error");
-       });
+       const urls = urlStr.split(',');
+       let hasError = false;
+       
+       // Chạy vòng lặp bóc tách từng link ra để xóa
+       for(let i = 0; i < urls.length; i++) {
+           let u = urls[i].trim();
+           if(u) {
+               try { 
+                   let res = await callServer('TC_deleteProof', {fileUrl: u, email: window.GLOBAL_EMAIL});
+                   if (!res.success) hasError = true;
+               } catch(e) { hasError = true; }
+           }
+       }
+       
+       area.style.opacity = '1';
+       if(!hasError) {
+           document.getElementById('i_proof_url').value = '';
+           document.getElementById('i_proof_name').value = '';
+           renderPreviewLinks();
+           showNotify("Đã xóa toàn bộ file đính kèm trên Drive.", "success");
+       } else {
+           // Vẫn gỡ bỏ giao diện cho người dùng nhưng báo cảnh báo nhẹ
+           document.getElementById('i_proof_url').value = '';
+           document.getElementById('i_proof_name').value = '';
+           renderPreviewLinks();
+           showNotify("Đã xóa file đính kèm khỏi giao diện, nhưng có lỗi khi xóa một số file trên Drive.", "warning");
+       }
     }
   </script>
 </body>
