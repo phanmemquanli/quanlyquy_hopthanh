@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý Các Quỹ</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="ketnoi.js"></script>
+
+  <style>
+    /* ========================= */
+    /* 1. GLOBAL STYLES */
+    /* ========================= */
+    html, body {
+      height: 100%; margin: 0; padding: 0;
+      background-color: #f3f4f6;
+      font-family: 'Times New Roman', serif;
+      font-size: 15px; overflow: hidden;
+    }
+    
+    /* GIAO DIỆN RỘNG 98% */
+    .main-container {
+      display: flex; flex-direction: column; height: 100vh;
+      width: 98%; max-width: 100%; margin: 0 auto;
+      background: white; box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    /* ========================= */
+    /* 2. HEADER AREA */
+    /* ========================= */
+    .app-header {
+      flex-shrink: 0; position: relative;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: white; padding: 10px 15px;
+      display: flex; flex-direction: column; justify-content: center;
+      align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; 
+    }
+    .app-title { font-weight: 800; text-transform: uppercase; margin: 0; font-size: 18px; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .school-name { font-size: 12px; opacity: 0.9; text-transform: uppercase; margin-bottom: 2px; }
+
+    /* --- DEVELOPER BADGE PRO (DIAMOND ICON) --- */
+    @keyframes sparkleAnim { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+    .dev-badge {
+      position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+      display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(5px); padding: 5px 15px 5px 5px; border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 5px 15px rgba(0, 123, 255, 0.2); 
+      transition: all 0.3s ease; cursor: default; z-index: 10;
+    }
+    .dev-badge:hover { background: rgba(255, 255, 255, 0.25); box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3); transform: translateY(-52%) scale(1.03); }
+
+    .dev-avatar { display: flex; justify-content: center; align-items: center; width: 36px; height: 36px; background: #fff; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .dev-avatar i { font-size: 22px; background: linear-gradient(90deg, #ffffff 0%, #80dfff 25%, #007bff 50%, #a38cff 75%, #ffffff 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; filter: drop-shadow(0 0 3px rgba(200, 240, 255, 0.9)); animation: sparkleAnim 3s linear infinite; }
+    .dev-info { display: flex; flex-direction: column; text-align: left; }
+    .dev-role { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.95; font-family: sans-serif; margin-bottom: 0; line-height: 1.2; color: #e0e7ff; }
+    .dev-name { font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.3); line-height: 1.2; white-space: nowrap; }
+    
+    @media (max-width: 650px) { .dev-badge { display: none; } }
+
+    /* NAVIGATION */
+    .nav-tabs { flex-shrink: 0; background: #f8fafc; padding: 0 10px; border-bottom: 1px solid #dee2e6; }
+    .nav-link { color: #64748b; font-weight: 600; border-radius: 0; border: none; border-bottom: 3px solid transparent; }
+    .nav-link.active { color: #1e3a8a; background: transparent; border-bottom: 3px solid #1e3a8a; }
+
+    /* ========================= */
+    /* 3. CONTENT LAYOUT */
+    /* ========================= */
+    .tab-content { flex-grow: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+    .tab-pane { height: 100%; width: 100%; flex-direction: column; padding: 10px; display: none; }
+    .tab-pane.active { display: flex; }
+
+    /* SEARCH TAB */
+    .search-layout { display: flex; flex-direction: column; height: 100%; }
+    .search-controls { flex-shrink: 0; background: #fff; padding-bottom: 5px; }
+    
+    /* SUMMARY BAR */
+    .summary-bar { 
+      flex-shrink: 0; display: flex; justify-content: flex-end; gap: 25px; 
+      background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; 
+      padding: 10px 20px; margin-bottom: 10px; font-size: 16px; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05); align-items: center;
+    }
+    .sum-val { font-weight: 900; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 20px; margin-left: 5px; text-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+    
+    /* BẢNG TRA CỨU KẺ ĐẬM */
+    .table-wrapper { flex-grow: 1; overflow: auto; border: 2px solid #333; position: relative; }
+    .table-custom { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .table-custom thead th { position: sticky; top: 0; z-index: 100; background-color: #e2e3e5; color: #000; border-bottom: 2px solid #000; border-right: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; }
+    .table-custom tbody td { vertical-align: middle; border-bottom: 1px solid #000; border-right: 1px solid #000; padding: 6px 8px; color: #000; }
+    .table-custom thead th:last-child, .table-custom tbody td:last-child { border-right: none; }
+
+    .amt-col { text-align: right; font-weight: bold; }
+    .income { color: #198754; }
+    .expense { color: #dc3545; }
+
+    /* INPUT TAB - Form rộng 1000px */
+    .input-layout { display: flex; flex-direction: column; height: 100%; max-width: 1000px; margin: 0 auto; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .input-header { background: #f8fafc; padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; color: #1e3a8a; font-weight: bold; font-size: 16px; }
+    .input-body { flex-grow: 1; overflow-y: auto; padding: 15px; background: white; }
+    .form-control:focus { border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1); }
+    textarea.auto-grow { resize: none; overflow: hidden; min-height: 32px; height: 32px; transition: height 0.1s; }
+
+    /* FOOTER */
+    .dev-footer { flex-shrink: 0; text-align: center; padding: 10px; font-size: 13px; color: #64748b; border-top: 1px solid #dee2e6; background: #f8fafc; }
+
+    /* ========================= */
+    /* 4. MODALS & OVERLAYS */
+    /* ========================= */
+    .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+    #loadingOverlay { background: rgba(255,255,255,0.9); z-index: 10000; }
+    #accessDeniedBanner { background: white; z-index: 20000; flex-direction: column; text-align: center; }
+    
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10005; display: none; justify-content: center; align-items: center; }
+    .modal-box { background: white; padding: 20px; border-radius: 10px; width: 400px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    
+    .upload-box { border: 2px dashed #cbd5e1; padding: 8px; text-align: center; border-radius: 6px; background: #f8fafc; cursor: pointer; transition: 0.2s; }
+    .upload-box:hover { border-color: #3b82f6; background: #eff6ff; }
+    
+    #warnDeleteFile { display: none; margin-top: 10px; padding: 8px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; font-size: 0.85rem; text-align: center; }
+
+    /* --- LOGIN OVERLAY --- */
+    #login-overlay { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: #f0fdf4; z-index: 999999; 
+      display: flex; flex-direction: column; justify-content: center; align-items: center; 
+    }
+    .login-box { 
+      background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 12px; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #0d6efd; 
+    }
+    .login-logo { width: 80px; height: 80px; margin-bottom: 15px; }
+
+  </style>
+</head>
+<body>
+
+  <div class="modal fade" id="trialModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 9999999;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center p-4 border-0 shadow-lg" style="background: rgba(255, 255, 255, 0.95);">
+        <div class="mb-4 mt-2">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" width="120">
+        </div>
+        <h5 class="fw-bold mb-3" style="font-family: 'Segoe UI', sans-serif;" id="trialTitle">Thông báo dùng thử</h5>
+        <p class="fs-5 text-secondary" style="font-family: 'Segoe UI', sans-serif;" id="trialMessage">
+          Bạn đang trong thời gian dùng thử 14 ngày. Ngày bắt đầu: 07/02/2026.
+        </p>
+        <button type="button" id="btnTrialOk" class="btn btn-primary px-5 mt-3 fw-bold" data-bs-dismiss="modal">Đồng ý</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="login-overlay" style="display:none;">
+    <div class="login-box">
+      <img src="https://i.ibb.co/SXSKh9xM/Logo-m-i-c-a-tr-ng-H-p-Th-Nh.png" class="login-logo">
+      <h2 style="color: #0d6efd; margin-top: 0; text-transform: uppercase; font-size: 24px; font-weight: bold;">Quản Lý Các Quỹ</h2>
+      <h3 style="color: #dc3545; margin-bottom: 25px; border-bottom: none; font-size: 18px;">Trường TH&THCS Hợp Thành</h3>
+      <p style="font-size: 14px; color: #666; font-style: italic; margin-bottom: 20px;">Hệ thống yêu cầu xác thực bằng Email được cấp quyền</p>
+      
+      <div id="buttonDiv" class="d-flex justify-content-center w-100 mt-2"></div>
+      
+      <div style="margin-top: 30px; font-size: 12px; color: #999; font-weight: bold; text-align: center;">Nhà phát triển: HOÀNG NGỌC LÂM</div>
+    </div>
+  </div>
+
+  <div id="loadingOverlay" class="overlay-screen">
+    <div class="text-center">
+      <div class="spinner-border text-primary" role="status"></div>
+      <div class="mt-2 fw-bold text-primary">Đang tải...</div>
+    </div>
+  </div>
+
+  <div id="accessDeniedBanner" class="overlay-screen" style="display:none;">
+    <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.1); text-align:center;">
+      <i class="bi bi-shield-lock-fill text-danger" style="font-size: 60px;"></i>
+      <h3 class="fw-bold text-danger mt-3">KHÔNG CÓ QUYỀN TRUY CẬP</h3>
+      <p class="text-muted">Xin chào: <b class="text-primary" id="deniedEmailTxt"></b></p>
+      <p class="text-muted">Vui lòng liên hệ quản trị viên.</p>
+      <button onclick="logoutGoogle()" class="btn btn-sm btn-outline-danger fw-bold mt-2">Đổi tài khoản</button>
+    </div>
+  </div>
+
+  <div class="main-container" id="mainApp" style="display:none;">
+    
+    <div class="app-header">
+      <div class="school-name">TRƯỜNG TH&THCS HỢP THÀNH</div>
+      <div class="app-title">QUẢN LÝ CÁC QUỸ</div>
+      
+      <div class="dev-badge">
+        <div class="dev-avatar"><i class="bi bi-gem"></i></div>
+        <div class="dev-info">
+          <span class="dev-name">HOÀNG NGỌC LÂM</span>
+          <span class="dev-role d-block" id="txtUserEmailLog" style="text-transform: none; font-size: 10px; cursor: pointer; text-decoration: underline;" onclick="logoutGoogle()">Đăng xuất</span>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav nav-tabs" id="myTab">
+      <li class="nav-item" id="nav-search-li"><button class="nav-link active" onclick="switchTab('search')"><i class="bi bi-search"></i> Tra Cứu</button></li>
+      <li class="nav-item d-none" id="nav-TH"><button class="nav-link" onclick="setupInputTab('TH')"><i class="bi bi-heart-pulse"></i> Thăm Hỏi</button></li>
+      <li class="nav-item d-none" id="nav-QD"><button class="nav-link" onclick="setupInputTab('QD')"><i class="bi bi-flag"></i> Quỹ Đội</button></li>
+      <li class="nav-item d-none" id="nav-CB"><button class="nav-link" onclick="setupInputTab('CB')"><i class="bi bi-star"></i> Chi Bộ</button></li>
+      <li class="nav-item d-none" id="nav-KH"><button class="nav-link" onclick="setupInputTab('KH')"><i class="bi bi-mortarboard"></i> Khuyến Học</button></li>
+      <li class="nav-item d-none" id="nav-CTD">
+        <button class="nav-link" onclick="setupInputTab('CTD')">
+           <span class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-1 me-1 shadow-sm" style="width:22px; height:22px; vertical-align: text-bottom;">
+               <i class="bi bi-plus-lg" style="font-weight: 900; font-size: 16px;"></i>
+           </span> 
+           Chữ Thập Đỏ
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      
+      <div class="tab-pane active" id="tab-search">
+        <div class="search-layout">
+          <div class="search-controls">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label">Chọn Quỹ</label>
+                <select class="form-select" id="s_fund" onkeydown="checkEnter(event)" onchange="clearSearchData()">
+                  <option value="TH">Quỹ Thăm Hỏi</option>
+                  <option value="QD">Quỹ Đội</option>
+                  <option value="CB">Quỹ Chi Bộ</option>
+                  <option value="KH">Quỹ Khuyến Học</option>
+                  <option value="CTD">Quỹ Chữ Thập Đỏ</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Từ ngày</label>
+                <input type="text" class="form-control text-center" id="s_fromDate" placeholder="dd/mm/yyyy" maxlength="10" oninput="autoFormatDate(this)" onkeydown="checkEnter(event)">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Đến ngày</label>
+                <input type="text" class="form-control text-center" id="s_toDate" placeholder="dd/mm/yyyy" maxlength="10" oninput="autoFormatDate(this)" onkeydown="checkEnter(event)">
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-primary btn-sm w-100 fw-bold" onclick="loadFundData()" style="height:32px; margin-top:20px;">Xem</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-bar" id="summaryBox" style="display:none;">
+             <span class="text-success">Thu: <span class="sum-val" id="sumThu">0</span></span>
+             <span class="text-danger border-start ps-3">Chi: <span class="sum-val" id="sumChi">0</span></span>
+             <span class="text-primary border-start ps-3">Dư: <span class="sum-val" id="sumDu">0</span></span>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table-custom table-hover" style="width:100%">
+              <thead>
+                <tr>
+                  <th width="12%">Thời gian</th>
+                  <th width="8%">Loại</th>
+                  <th width="35%">Diễn giải</th>
+                  <th width="15%">Thu</th>
+                  <th width="15%">Chi</th>
+                  <th width="15%">Chứng từ</th>
+                </tr>
+              </thead>
+              <tbody id="searchTableBody">
+                <tr><td colspan="6" class="text-center text-muted py-5"><i>Vui lòng chọn điều kiện và bấm "Xem"</i></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-input-gen" style="display:none;">
+        <div class="input-layout">
+          <div class="input-header" id="form-title">NHẬP LIỆU</div>
+          <div class="input-body">
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label class="form-label">1. Loại giao dịch</label>
+                <select class="form-select fw-bold text-primary" id="i_type">
+                  <option value="Thu" selected>➕ Thu tiền</option>
+                  <option value="Chi">➖ Chi tiền</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">2. Ngày tháng</label>
+                <input type="text" class="form-control text-center" id="i_date" placeholder="dd/mm/yyyy" maxlength="10" oninput="autoFormatDate(this)">
+              </div>
+              <div class="col-12">
+                <label class="form-label">3. Diễn giải</label>
+                <textarea class="form-control auto-grow" id="i_desc" rows="1" placeholder="Nhập nội dung..." oninput="autoResize(this)"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label text-danger">4. Số tiền (VNĐ)</label>
+                <input type="text" class="form-control text-end fw-bold text-danger fs-5" id="i_amount" oninput="formatCurrency(this)" placeholder="0">
+              </div>
+              <div class="col-12">
+                <label class="form-label">5. Người nộp / Người nhận (*)</label>
+                <input type="text" class="form-control bg-warning bg-opacity-10" id="i_person" placeholder="Bắt buộc nhập...">
+              </div>
+              
+              <div class="col-12 mt-2">
+                <label class="form-label">6. Chứng từ</label>
+                <div class="upload-box" onclick="openUploadModal()">
+                  <i class="bi bi-paperclip text-primary"></i> <span id="file-label" class="small text-muted">Đính kèm file</span>
+                </div>
+                <div id="preview-area" class="mt-2 text-center" style="display:none;">
+                   <div class="d-flex align-items-center justify-content-center gap-2">
+                      <a id="btn-preview" href="#" target="_blank" class="text-success small fw-bold text-decoration-none">
+                        <i class="bi bi-check-circle-fill"></i> <span id="preview-text">Đã tải xong</span>
+                      </a>
+                      <i class="bi bi-x-circle-fill text-danger" style="cursor:pointer; font-size:1.1rem;" title="Gỡ bỏ" onclick="deleteCurrentProof()"></i>
+                   </div>
+                </div>
+                <input type="hidden" id="i_proof_url"><input type="hidden" id="i_proof_name">
+              </div>
+
+              <div class="col-12 mt-3 text-center">
+                <button class="btn btn-primary w-100 fw-bold py-2" id="btnSave" onclick="submitForm()">
+                  <i class="bi bi-save"></i> GHI SỔ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    
+    <div class="dev-footer">Phát triển ứng dụng: <b>Hoàng Ngọc Lâm</b> - Hiệu trưởng Trường Tiểu học Hợp Thành</div>
+    
+  </div>
+
+  <div id="upload_modal" class="modal-overlay">
+    <div class="modal-box text-start">
+      <h5 class="text-primary text-center fw-bold mb-3">📁 TẢI FILE</h5>
+      
+      <div class="mb-2">
+        <label class="form-label small">Thư mục:</label>
+        <div class="d-flex gap-1">
+          <select id="folderSelect" class="form-select form-select-sm"><option>⏳...</option></select>
+          <button class="btn btn-sm btn-outline-success" onclick="toggleNewFolderUI()" title="Tạo thư mục mới"><i class="bi bi-folder-plus"></i></button>
+        </div>
+      </div>
+
+      <div id="newFolderArea" style="display:none; margin-bottom:10px; background:#f8fafc; padding:10px; border:1px solid #dee2e6; border-radius:5px;">
+        <div class="d-flex gap-1">
+            <input type="text" id="txtNewFolderName" placeholder="Tên thư mục mới" class="form-control form-control-sm">
+            <button onclick="doCreateNewFolder()" class="btn btn-sm btn-success">Tạo</button>
+            <button onclick="toggleNewFolderUI()" class="btn btn-sm btn-danger">Hủy</button>
+        </div>
+        <div id="createFolderStatus" style="font-size:12px; margin-top:5px;" class="text-danger fw-bold"></div>
+      </div>
+      
+      <div class="mb-2 text-center">
+        <div class="btn-group w-100" role="group">
+          <input type="radio" class="btn-check" name="upMode" id="modeFile" value="file" checked onchange="toggleUpMode()">
+          <label class="btn btn-outline-primary btn-sm" for="modeFile">File lẻ</label>
+          <input type="radio" class="btn-check" name="upMode" id="modeFolder" value="folder" onchange="toggleUpMode()">
+          <label class="btn btn-outline-primary btn-sm" for="modeFolder">Thư mục</label>
+        </div>
+      </div>
+      
+      <div class="upload-box mb-2" onclick="document.getElementById('fileIn').click()">
+        <span id="fileText" class="small">Chọn file</span>
+        <input type="file" id="fileIn" style="display:none" onchange="fileSel(this)">
+      </div>
+      
+      <div id="warnDeleteFile">⚠️ Đã có chứng từ. Nếu tải tiếp, file cũ sẽ bị xóa!</div>
+
+      <div id="upStatus" class="text-center small fw-bold mb-2 text-primary" style="height:20px"></div>
+      
+      <div class="d-flex gap-2">
+        <button id="uploadBtn" class="btn btn-sm btn-success flex-grow-1" onclick="doUpload()" disabled>TẢI LÊN</button>
+        <button class="btn btn-sm btn-secondary" onclick="closeUploadModal()">Hủy</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="notify_modal" class="modal-overlay" style="z-index: 10006;">
+      <div class="modal-box text-center">
+        <div id="notify_icon" style="font-size: 35px; margin-bottom: 5px;">⚠️</div>
+        <h5 id="notify_title" class="fw-bold mb-2">Thông báo</h5>
+        <div id="notify_desc" class="mb-3 text-secondary" style="font-size:14px">...</div>
+        <button class="btn btn-sm btn-primary w-50" onclick="closeNotify()">Đóng</button>
+      </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script>
+    // ==========================================================
+    // 0. BẢN QUYỀN VÀ AUTHENTICATION (CẬP NHẬT)
+    // ==========================================================
+    let isGoogleLoaded = false;
+    let isLoginOverlayVisible = false;
+
+    function checkTrialPeriod() {
+      // return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
+      const trialStartDate = new Date(2026, 1, 7); // 07/02/2026
+      const trialDays = 14;
+      const trialExpiryDate = new Date(trialStartDate);
+      trialExpiryDate.setDate(trialStartDate.getDate() + trialDays);
+      const today = new Date();
+
+      const trialModalElement = document.getElementById('trialModal');
+      const btnTrialOk = document.getElementById('btnTrialOk');
+
+      if (!trialModalElement || !btnTrialOk) return true;
+
+      if (today > trialExpiryDate) {
+        document.getElementById('trialTitle').innerText = "Hết hạn dùng thử";
+        document.getElementById('trialMessage').innerHTML = "Thời gian dùng thử 14 ngày của bạn đã kết thúc.<br>Vui lòng liên hệ Admin để gia hạn phần mềm.";
+        
+        btnTrialOk.innerText = 'Thoát hệ thống';
+        btnTrialOk.classList.replace('btn-primary', 'btn-danger');
+        btnTrialOk.removeAttribute('data-bs-dismiss'); 
+        btnTrialOk.onclick = function() { window.location.href = "https://www.google.com"; };
+        
+        new bootstrap.Modal(trialModalElement, { backdrop: 'static', keyboard: false }).show();
+        
+        let loginOverlay = document.getElementById('login-overlay'); if(loginOverlay) loginOverlay.style.display = 'none';
+        let mainApp = document.getElementById('mainApp'); if(mainApp) mainApp.style.display = 'none';
+        return false;
+      }
+      new bootstrap.Modal(trialModalElement, { backdrop: 'static', keyboard: false }).show();
+      return true;
+    }
+
+    $(document).ready(function() {
+      if (!checkTrialPeriod()) return; 
+
+      document.getElementById('loadingOverlay').style.display = 'none';
+
+      const storedEmail = sessionStorage.getItem("USER_EMAIL_TC");
+      if(storedEmail) {
+        window.GLOBAL_EMAIL = storedEmail; 
+        document.getElementById('login-overlay').style.display = 'none';
+        loadUserContext(storedEmail);
+      } else {
+        document.getElementById('login-overlay').style.display = 'flex';
+        isLoginOverlayVisible = true;
+        renderGoogleButton();
+      }
+    });
+
+    function initGoogleAuth() {
+      isGoogleLoaded = true;
+      renderGoogleButton();
+    }
+
+    function renderGoogleButton() {
+      if (isGoogleLoaded && isLoginOverlayVisible) {
+        const id1 = "376040819369-4snobajf9rcspsq8gqts";
+        const id2 = "78sq894kp2l5.apps.googleusercontent.com";
+        
+        google.accounts.id.initialize({
+            client_id: id1 + id2,
+            callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+            document.getElementById("buttonDiv"),
+            { theme: "outline", size: "large", shape: "rectangular", text: "sign_in_with", logo_alignment: "left" }
+        );
+      }
+    }
+
+    function decodeJwtResponse(token) {
+      let base64Url = token.split('.')[1];
+      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    function handleCredentialResponse(response) {
+      const payload = decodeJwtResponse(response.credential);
+      const email = payload.email;
+      sessionStorage.setItem("USER_EMAIL_TC", email);
+      window.GLOBAL_EMAIL = email; 
+      
+      document.getElementById('login-overlay').style.display = 'none';
+      isLoginOverlayVisible = false;
+      loadUserContext(email);
+    }
+
+    function logoutGoogle() {
+      sessionStorage.removeItem("USER_EMAIL_TC");
+      window.GLOBAL_EMAIL = null;
+      location.reload(); 
+    }
+
+    function loadUserContext(email) {
+       document.getElementById('loadingOverlay').style.display = 'flex';
+       callServer('TC_getUserContext', {email: email}).then(initUI).catch(showError);
+    }
+
+    // ==========================================================
+    // 1. GLOBAL VARIABLES & INIT
+    // ==========================================================
+    let CURRENT_FUND_CODE = '';
+    let CURR_FILES = [];
+    let LINK_CAN_XOA = ""; 
+
+    function initUI(ctx) {
+      document.getElementById('loadingOverlay').style.display = 'none';
+      document.getElementById('txtUserEmailLog').innerText = ctx.email + " (Đăng xuất)";
+
+      if (ctx.isBlocked) {
+        document.getElementById('accessDeniedBanner').style.display = 'flex';
+        document.getElementById('deniedEmailTxt').innerText = ctx.email;
+        if(ctx.adminEmail) document.getElementById('adminLink').href = "mailto:" + ctx.adminEmail;
+        return;
+      }
+      document.getElementById('mainApp').style.display = 'flex';
+
+      if (ctx.editPermissions['TH']) document.getElementById('nav-TH').classList.remove('d-none');
+      if (ctx.editPermissions['QD']) document.getElementById('nav-QD').classList.remove('d-none');
+      if (ctx.editPermissions['CB']) document.getElementById('nav-CB').classList.remove('d-none');
+      if (ctx.editPermissions['KH']) document.getElementById('nav-KH').classList.remove('d-none');
+      if (ctx.editPermissions['CTD']) document.getElementById('nav-CTD').classList.remove('d-none');
+
+      if (!ctx.canView) {
+        document.getElementById('nav-search-li').style.display = 'none';
+        document.getElementById('tab-search').classList.remove('active');
+        
+        let firstEditTab = null;
+        if (ctx.editPermissions['TH']) firstEditTab = 'TH';
+        else if (ctx.editPermissions['QD']) firstEditTab = 'QD';
+        else if (ctx.editPermissions['CB']) firstEditTab = 'CB';
+        else if (ctx.editPermissions['KH']) firstEditTab = 'KH';
+        else if (ctx.editPermissions['CTD']) firstEditTab = 'CTD';
+
+        if (firstEditTab) setupInputTab(firstEditTab);
+      }
+    }
+
+    // ==========================================================
+    // 2. HELPER FUNCTIONS
+    // ==========================================================
+    function showError(err) { 
+        document.getElementById('loadingOverlay').style.display = 'none';
+        showNotify("Lỗi hệ thống: " + (err.message || err), "error");
+    }
+    function autoFormatDate(input) {
+      let v = input.value.replace(/\D/g, '');
+      if (v.length > 8) v = v.substring(0, 8);
+      if (v.length >= 5) input.value = v.substring(0, 2) + '/' + v.substring(2, 4) + '/' + v.substring(4);
+      else if (v.length >= 3) input.value = v.substring(0, 2) + '/' + v.substring(2);
+      else input.value = v;
+    }
+    function getTodayString() {
+      const d = new Date();
+      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    }
+    function formatMoney(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+    function formatCurrency(input) {
+      let value = input.value.replace(/\D/g, "");
+      input.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+    function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+    function checkEnter(e) { if (e.key === "Enter") loadFundData(); }
+
+    function showNotify(msg, type='warning') {
+       const modal = document.getElementById('notify_modal');
+       const icon = document.getElementById('notify_icon');
+       const title = document.getElementById('notify_title');
+       const desc = document.getElementById('notify_desc');
+       modal.style.display = 'flex'; desc.innerHTML = msg;
+       if(type === 'success') { icon.innerText = '✅'; title.innerText = 'Thành công'; title.style.color = 'var(--bs-green)'; } 
+       else if (type === 'error') { icon.innerText = '❌'; title.innerText = 'Lỗi'; title.style.color = 'var(--bs-red)'; } 
+       else { icon.innerText = '⚠️'; title.innerText = 'Lưu ý'; title.style.color = 'var(--bs-orange)'; }
+    }
+    function closeNotify() { document.getElementById('notify_modal').style.display = 'none'; }
+
+    function switchTab(t) {
+      document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-search').classList.remove('active');
+      document.getElementById('tab-input-gen').style.display = 'none';
+      if (t === 'search') {
+        document.querySelector('#myTab button:first-child').classList.add('active');
+        document.getElementById('tab-search').classList.add('active');
+      } else {
+        document.getElementById('tab-input-gen').style.display = 'block';
+      }
+    }
+
+    // ==========================================================
+    // 3. SEARCH LOGIC
+    // ==========================================================
+    function clearSearchData() {
+       const tbody = document.getElementById('searchTableBody');
+       const sumBox = document.getElementById('summaryBox');
+       tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5"><i>Vui lòng bấm "Xem" để tải dữ liệu mới</i></td></tr>';
+       sumBox.style.display = 'none';
+    }
+
+    function loadFundData() {
+      const fundCode = document.getElementById('s_fund').value;
+      const fromDate = document.getElementById('s_fromDate').value;
+      const toDate = document.getElementById('s_toDate').value;
+      const tbody = document.getElementById('searchTableBody');
+      const sumBox = document.getElementById('summaryBox');
+      
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div></td></tr>`;
+      sumBox.style.display = 'none';
+      
+      callServer('TC_getThuChiData', {fundCode: fundCode, fromDate: fromDate, toDate: toDate, email: window.GLOBAL_EMAIL}).then(data => {
+          if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-5">Chưa có dữ liệu</td></tr>`;
+            return;
+          }
+          let html = ''; let tThu = 0, tChi = 0;
+          data.forEach(r => {
+             if (r.thu) tThu += Number(r.thu); if (r.chi) tChi += Number(r.chi);
+             const sThu = r.thu ? formatMoney(r.thu) : '';
+             const sChi = r.chi ? formatMoney(r.chi) : '';
+             const badge = (r.type === 'Thu') ? '<span class="badge bg-success">Thu</span>' : '<span class="badge bg-danger">Chi</span>';
+             let link = r.link ? `<a href="${r.link}" target="_blank" class="text-primary text-decoration-none"><i class="bi bi-paperclip"></i> Xem</a>` : '';
+             html += `<tr><td>${r.date}</td><td class="text-center">${badge}</td><td>${r.desc}</td><td class="amt-col income">${sThu}</td><td class="amt-col expense">${sChi}</td><td class="text-center">${link}</td></tr>`;
+          });
+          tbody.innerHTML = html;
+          document.getElementById('sumThu').innerText = formatMoney(tThu);
+          document.getElementById('sumChi').innerText = formatMoney(tChi);
+          document.getElementById('sumDu').innerText = formatMoney(tThu - tChi);
+          sumBox.style.display = 'flex';
+      }).catch(err => {
+          showNotify("Lỗi tải dữ liệu: " + err.message, "error");
+          tbody.innerHTML = "";
+      });
+    }
+
+    // ==========================================================
+    // 4. INPUT LOGIC
+    // ==========================================================
+    function setupInputTab(fundCode) {
+      CURRENT_FUND_CODE = fundCode;
+      switchTab('input');
+      document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+      document.querySelector(`#nav-${fundCode} button`).classList.add('active');
+
+      const titles = { 'TH': 'QUỸ THĂM HỎI', 'QD': 'QUỸ ĐỘI', 'CB': 'QUỸ CHI BỘ', 'KH': 'QUỸ KHUYẾN HỌC', 'CTD': 'QUỸ CHỮ THẬP ĐỎ' };
+      document.getElementById('form-title').innerText = `NHẬP ${titles[fundCode]}`;
+      
+      document.getElementById('i_amount').value = '';
+      document.getElementById('i_desc').value = '';
+      document.getElementById('i_person').value = '';
+      document.getElementById('i_date').value = getTodayString();
+      document.getElementById('i_desc').style.height = '32px';
+      
+      document.getElementById('preview-area').style.display = 'none';
+      document.getElementById('i_proof_url').value = '';
+      document.getElementById('i_proof_name').value = '';
+      
+      loadFolders();
+    }
+
+    function submitForm() {
+      const amountStr = document.getElementById('i_amount').value.replace(/\./g, '');
+      const desc = document.getElementById('i_desc').value.trim();
+      const person = document.getElementById('i_person').value.trim();
+      
+      if (!desc) { showNotify("Thiếu <b>Diễn giải</b>!", "warning"); document.getElementById('i_desc').focus(); return; }
+      if (!person) { showNotify("Thiếu <b>Người nộp/nhận</b>!", "warning"); document.getElementById('i_person').focus(); return; }
+      if (parseInt(amountStr) <= 0 || !amountStr) { showNotify("Số tiền phải > 0", "warning"); document.getElementById('i_amount').focus(); return; }
+
+      const formData = {
+        fundCode: CURRENT_FUND_CODE,
+        type: document.getElementById('i_type').value,
+        date: document.getElementById('i_date').value,
+        amount: parseInt(amountStr),
+        desc: desc,
+        person: person,
+        proofLink: document.getElementById('i_proof_url').value,
+        proofText: document.getElementById('i_proof_name').value
+      };
+      const btn = document.getElementById('btnSave');
+      const originalText = btn.innerHTML;
+      btn.disabled = true; btn.innerHTML = "Đang lưu...";
+      
+      callServer('TC_saveTransaction', {form: formData, email: window.GLOBAL_EMAIL}).then(res => {
+          showNotify("✅ " + res, "success");
+          setupInputTab(CURRENT_FUND_CODE);
+          btn.disabled = false; btn.innerHTML = originalText;
+      }).catch(err => {
+          showNotify("Lỗi: " + err.message, "error");
+          btn.disabled = false; btn.innerHTML = originalText;
+      });
+    }
+
+    // ==========================================================
+    // 5. UPLOAD & DELETE LOGIC (CORE)
+    // ==========================================================
+    function openUploadModal() { 
+       LINK_CAN_XOA = document.getElementById('i_proof_url').value || "";
+       if(LINK_CAN_XOA) document.getElementById('warnDeleteFile').style.display = 'block';
+       else document.getElementById('warnDeleteFile').style.display = 'none';
+       document.getElementById('upload_modal').style.display = 'flex'; 
+       loadFolders();
+    }
+
+    function closeUploadModal() {
+       document.getElementById('upload_modal').style.display = 'none';
+       document.getElementById('upStatus').innerText = "";
+       document.getElementById('fileIn').value = "";
+       document.getElementById('fileText').innerText = "Chọn file";
+       CURR_FILES = [];
+       document.getElementById('uploadBtn').disabled = true;
+       document.getElementById('modeFile').checked = true;
+       toggleUpMode();
+    }
+
+    function loadFolders() {
+       const s = document.getElementById('folderSelect');
+       s.innerHTML = `<option value="">⏳ Đang tải...</option>`;
+       callServer('TC_getSubFolders', {email: window.GLOBAL_EMAIL}).then(res => {
+         s.innerHTML = `<option value="">-- Thư mục gốc --</option>`;
+         if(res) {
+           res.forEach(f => { s.add(new Option(f.name, f.id)); });
+         }
+       }).catch(err => console.error(err));
+    }
+
+    function toggleUpMode() {
+       const mode = document.querySelector('input[name="upMode"]:checked').value;
+       const inp = document.getElementById('fileIn');
+       inp.value = ""; document.getElementById('fileText').innerText = "Chọn file";
+       document.getElementById('uploadBtn').disabled = true; CURR_FILES = [];
+       if(LINK_CAN_XOA) document.getElementById('warnDeleteFile').style.display = 'block';
+       
+       if (mode === 'folder') { 
+         inp.setAttribute('webkitdirectory', '');
+         inp.setAttribute('directory', ''); inp.setAttribute('multiple', ''); 
+       } else { 
+         inp.removeAttribute('webkitdirectory'); inp.removeAttribute('directory'); inp.removeAttribute('multiple');
+       }
+    }
+
+    function fileSel(input) {
+       if (input.files.length > 0) {
+         CURR_FILES = input.files;
+         const mode = document.querySelector('input[name="upMode"]:checked').value;
+         if (mode === 'folder') document.getElementById('fileText').innerText = `📂 ${CURR_FILES[0].webkitRelativePath.split('/')[0]} (${CURR_FILES.length} file)`;
+         else document.getElementById('fileText').innerText = "📄 " + CURR_FILES[0].name;
+         document.getElementById('uploadBtn').disabled = false;
+         
+         document.getElementById('uploadBtn').classList.add('active');
+         document.getElementById('uploadBtn').style.opacity = '1';
+         document.getElementById('uploadBtn').style.pointerEvents = 'auto';
+       }
+    }
+    
+    function doUpload() {
+       if (!CURR_FILES || CURR_FILES.length === 0) return;
+       const btn = document.getElementById('uploadBtn'), st = document.getElementById('upStatus');
+       const fId = document.getElementById('folderSelect').value; 
+       const mode = document.querySelector('input[name="upMode"]:checked').value;
+       
+       btn.classList.remove('active');
+       btn.style.opacity = '0.5';
+       btn.style.pointerEvents = 'none';
+       st.style.color = "blue"; st.innerText = "⏳ Đang xử lý...";
+
+       if (mode === 'file') {
+         const file = CURR_FILES[0];
+         const r = new FileReader();
+         r.onload = e => {
+           const b64 = e.target.result.split(',')[1];
+           callServer('TC_uploadProof', {base64Data: b64, fileName: file.name, mimeType: file.type, targetFolderId: fId, oldUrl: LINK_CAN_XOA, email: window.GLOBAL_EMAIL})
+             .then(res => { handleUpResult(res, st, btn); })
+             .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
+         };
+         r.readAsDataURL(file);
+
+       } else { 
+         const folderName = CURR_FILES[0].webkitRelativePath.split('/')[0];
+         let filesData = []; let count = 0;
+         st.innerText = `⏳ Đang đọc ${CURR_FILES.length} file...`;
+         
+         Array.from(CURR_FILES).forEach(file => {
+            const r = new FileReader();
+            r.onload = e => {
+               filesData.push({ fileName: file.name, mimeType: file.type, data: e.target.result.split(',')[1] });
+               count++;
+               if (count === CURR_FILES.length) {
+                  st.innerText = "⏳ Đang tải lên server...";
+                  callServer('TC_uploadFolderProof', {targetFolderId: fId, folderName: folderName, filesData: filesData, oldUrl: LINK_CAN_XOA, email: window.GLOBAL_EMAIL})
+                    .then(res => { handleUpResult(res, st, btn); })
+                    .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
+               }
+            };
+            r.readAsDataURL(file);
+         });
+       }
+    }
+
+    function handleUpResult(res, st, btn) {
+       if (res.success) {
+         st.style.color = "green";
+         st.innerText = "✅ Tải lên thành công"; 
+         
+         document.getElementById('i_proof_url').value = res.url;
+         document.getElementById('i_proof_name').value = res.name;
+         
+         document.getElementById('preview-text').innerText = "Đã tải xong";
+         document.getElementById('btn-preview').href = res.url;
+         document.getElementById('preview-area').style.display = 'block';
+         
+         setTimeout(closeUploadModal, 1000);
+       } else {
+         st.style.color = "red";
+         st.innerText = "❌ " + (res.msg || "Lỗi không xác định"); 
+         btn.classList.add('active');
+         btn.style.opacity = '1';
+         btn.style.pointerEvents = 'auto';
+       }
+    }
+
+    function deleteCurrentProof() {
+       const url = document.getElementById('i_proof_url').value;
+       if(!url) return;
+       
+       if(!confirm("Bạn có chắc chắn muốn xóa file đính kèm này?")) return;
+       
+       const area = document.getElementById('preview-area');
+       area.style.opacity = '0.5';
+       
+       callServer('TC_deleteProof', {fileUrl: url, email: window.GLOBAL_EMAIL}).then(res => {
+          area.style.opacity = '1';
+          if(res.success) {
+             document.getElementById('i_proof_url').value = '';
+             document.getElementById('i_proof_name').value = '';
+             document.getElementById('preview-area').style.display = 'none';
+             showNotify("Đã xóa file đính kèm.", "success");
+          } else {
+             showNotify("Lỗi xóa file: " + res.msg, "error");
+          }
+       }).catch(err => {
+          area.style.opacity = '1';
+          showNotify("Lỗi xóa file: " + err.message, "error");
+       });
+    }
+    
+    function toggleNewFolderUI(){ var a=document.getElementById('newFolderArea'); a.style.display=a.style.display==='none'?'block':'none'; }
+    function doCreateNewFolder(){ 
+      var n=document.getElementById('txtNewFolderName').value;
+      var p=document.getElementById('folderSelect').value; 
+      if(!n) return; 
+      document.getElementById('createFolderStatus').innerText = "⏳ Đang tạo...";
+      
+      callServer('TC_createNewFolder', {parentId: p, name: n, email: window.GLOBAL_EMAIL}).then(res => { 
+         if(res.success){ 
+            var s=document.getElementById('folderSelect'); 
+            s.add(new Option(res.name, res.id)); 
+            s.value=res.id; 
+            document.getElementById('txtNewFolderName').value = "";
+            document.getElementById('createFolderStatus').innerText = "";
+            toggleNewFolderUI(); 
+         } else {
+            document.getElementById('createFolderStatus').innerText = "❌ Lỗi: " + res.msg;
+         }
+      }).catch(err => {
+          document.getElementById('createFolderStatus').innerText = "❌ Lỗi: " + err.message;
+      });
+    }
+  </script>
+</body>
+</html>
