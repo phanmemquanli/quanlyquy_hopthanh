@@ -113,7 +113,7 @@
     .income { color: #198754; } 
     .expense { color: #dc3545; }
 
-    /* INPUT TAB - Form rộng 1000px */
+    /* INPUT TAB */
     .input-layout { display: flex; flex-direction: column; height: 100%; max-width: 1000px; margin: 0 auto; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
     .input-header { background: #f8fafc; padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; color: #1e3a8a; font-weight: bold; font-size: 16px; }
     .input-body { flex-grow: 1; overflow-y: auto; padding: 15px; background: white; }
@@ -122,10 +122,7 @@
     textarea.auto-grow { resize: none; overflow: hidden; min-height: 32px; height: 32px; transition: height 0.1s; }
 
     /* FOOTER */
-    .dev-footer {
-        flex-shrink: 0; text-align: center; padding: 10px; font-size: 13px; color: #64748b;
-        border-top: 1px solid #dee2e6; background: #f8fafc;
-    }
+    .dev-footer { flex-shrink: 0; text-align: center; padding: 10px; font-size: 13px; color: #64748b; border-top: 1px solid #dee2e6; background: #f8fafc; }
 
     /* ========================= */
     /* 4. MODALS & OVERLAYS */
@@ -133,14 +130,14 @@
     .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center; }
     #loadingOverlay { background: rgba(255,255,255,0.9); z-index: 10000; }
     #accessDeniedBanner { background: white; z-index: 20000; flex-direction: column; text-align: center; }
-    
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10005; display: none; justify-content: center; align-items: center; }
     .modal-box { background: white; padding: 20px; border-radius: 10px; width: 400px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
     
-    .upload-box { border: 2px dashed #cbd5e1; padding: 8px; text-align: center; border-radius: 6px; background: #f8fafc; cursor: pointer; transition: 0.2s; }
+    /* UPLOAD BOX STYLE TRONG MAIN APP */
+    .upload-box { border: 2px dashed #cbd5e1; padding: 15px; text-align: center; border-radius: 6px; background: #f8fafc; cursor: pointer; transition: 0.2s; font-weight:bold; }
     .upload-box:hover { border-color: #3b82f6; background: #eff6ff; }
 
-    /* --- LOGIN OVERLAY --- */
+    /* LOGIN OVERLAY */
     #login-overlay { 
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: #f0fdf4; z-index: 999999; 
@@ -333,21 +330,21 @@
               <div class="col-12 mt-2">
                 <label class="form-label">6. Chứng từ</label>
                 <div class="upload-box" onclick="openUploadModal()">
-                  <i class="bi bi-paperclip text-primary"></i> <span id="file-label" class="small text-muted">Đính kèm file</span>
+                  <i class="bi bi-paperclip text-primary" style="font-size:20px;"></i> <span class="text-primary fs-6">Đính kèm file</span>
                 </div>
                 
-                <div id="preview-area" class="mt-2 text-center" style="display:none;">
+                <div id="preview-area" class="mt-2 text-center" style="display:none; background:#f0fdf4; padding:10px; border-radius:6px; border:1px solid #bbf7d0;">
                    <div id="preview-links-container" class="d-flex flex-column align-items-center justify-content-center gap-1 mb-2">
                       </div>
-                   <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 mt-1" title="Gỡ bỏ toàn bộ" onclick="deleteCurrentProof()">
-                      <i class="bi bi-trash"></i> Xóa toàn bộ file
+                   <button type="button" class="btn btn-sm btn-outline-danger py-0 px-3 mt-1 fw-bold" title="Gỡ bỏ toàn bộ" onclick="deleteCurrentProof()">
+                      <i class="bi bi-trash"></i> Xóa toàn bộ file đính kèm
                    </button>
                 </div>
                 <input type="hidden" id="i_proof_url"><input type="hidden" id="i_proof_name">
               </div>
 
               <div class="col-12 mt-3 text-center">
-                <button class="btn btn-primary w-100 fw-bold py-2" id="btnSave" onclick="submitForm()">
+                <button class="btn btn-primary w-100 fw-bold py-2" id="btnSave" onclick="submitForm()" style="font-size: 16px;">
                   <i class="bi bi-save"></i> GHI SỔ
                 </button>
               </div>
@@ -382,9 +379,9 @@
     // ==========================================================
     let isGoogleLoaded = false;
     let isLoginOverlayVisible = false;
-//GIỚI HẠN THỜI GIAN SỬ DỤNG
+
     function checkTrialPeriod() {
-       return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
+      // return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
       const trialStartDate = new Date(2026, 1, 7); 
       const trialDays = 14;
       const trialExpiryDate = new Date(trialStartDate);
@@ -439,31 +436,47 @@
         isLoginOverlayVisible = true;
         renderGoogleButton();
       }
-
-      // TỰ ĐỘNG BẮT SỰ KIỆN KHI UPDATE LINK CHỨNG TỪ (Để render danh sách file Preview)
-      setInterval(() => {
-          const urlInput = document.getElementById('i_proof_url');
-          const previewArea = document.getElementById('preview-area');
-          if (previewArea && previewArea.style.display === 'block' && urlInput && urlInput.value && !urlInput.dataset.rendered) {
-              const urls = urlInput.value.split(',');
-              const previewContainer = document.getElementById('preview-links-container');
-              if (previewContainer) {
-                  let html = '';
-                  urls.forEach((u, i) => {
-                      if (u.trim()) {
-                          let fileName = `File đính kèm ${i + 1}`;
-                          html += `<a href="${u.trim()}" target="_blank" class="text-success small fw-bold text-decoration-none d-block"><i class="bi bi-check-circle-fill"></i> ${fileName}</a>`;
-                      }
-                  });
-                  previewContainer.innerHTML = html;
-                  urlInput.dataset.rendered = "true";
-              }
-          } else if (urlInput && !urlInput.value) {
-              urlInput.dataset.rendered = ""; // Reset
-          }
-      }, 500);
-
     });
+
+    // CẬP NHẬT: HÀM GLOBAL KẾT NỐI TỪ MODAL_UPLOAD.HTML TRẢ VỀ INDEX.HTML
+    window.returnLinkToMain = function(newUrls, newNames, wMode) {
+        const urlInput = document.getElementById('i_proof_url');
+        const nameInput = document.getElementById('i_proof_name');
+        
+        // Gộp link nếu chọn Chèn Thêm, ngược lại Thay thế
+        if (wMode === 'append' && urlInput.value) {
+            urlInput.value = urlInput.value + ", " + newUrls;
+            nameInput.value = nameInput.value + " + " + newNames;
+        } else {
+            urlInput.value = newUrls;
+            nameInput.value = newNames;
+        }
+        renderPreviewLinks(); // Gọi hàm render để vẽ lại list
+    };
+
+    // Hàm vẽ danh sách Link vào Form Nhập Liệu
+    function renderPreviewLinks() {
+        const urlInput = document.getElementById('i_proof_url');
+        const previewArea = document.getElementById('preview-area');
+        const previewContainer = document.getElementById('preview-links-container');
+
+        if (urlInput.value && urlInput.value.trim() !== "") {
+            const urls = urlInput.value.split(',');
+            let html = '';
+            urls.forEach((u, i) => {
+                let cleanLink = u.trim();
+                if (cleanLink) {
+                    let fileName = urls.length > 1 ? `📄 Xem file đính kèm ${i + 1}` : `📄 Xem file đính kèm`;
+                    html += `<a href="${cleanLink}" target="_blank" class="text-success fs-6 fw-bold text-decoration-none d-block mb-1"><i class="bi bi-check-circle-fill"></i> ${fileName}</a>`;
+                }
+            });
+            previewContainer.innerHTML = html;
+            previewArea.style.display = 'block';
+        } else {
+            previewArea.style.display = 'none';
+            previewContainer.innerHTML = '';
+        }
+    }
 
     function executeScripts(element) {
         const scripts = element.querySelectorAll('script');
@@ -691,9 +704,10 @@
       document.getElementById('i_date').value = getTodayString();
       document.getElementById('i_desc').style.height = '32px';
       
-      document.getElementById('preview-area').style.display = 'none';
+      // Xóa form đính kèm
       document.getElementById('i_proof_url').value = '';
       document.getElementById('i_proof_name').value = '';
+      renderPreviewLinks(); 
       
       if(typeof loadFolders === 'function') loadFolders();
     }
@@ -745,7 +759,7 @@
           if(res.success) {
              document.getElementById('i_proof_url').value = '';
              document.getElementById('i_proof_name').value = '';
-             document.getElementById('preview-area').style.display = 'none';
+             renderPreviewLinks();
              showNotify("Đã xóa file đính kèm.", "success");
           } else {
              showNotify("Lỗi xóa file: " + res.msg, "error");
