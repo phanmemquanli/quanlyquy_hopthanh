@@ -208,7 +208,7 @@
   <div class="main-container" id="mainApp" style="display:none;">
     
     <div class="app-header">
-      <div class="school-name">TRƯỜNG TIỂU HỌC HỢP THÀNH</div>
+      <div class="school-name">TRƯỜNG TH&THCS HỢP THÀNH</div>
       <div class="app-title">QUẢN LÝ CÁC QUỸ</div>
       
       <div class="dev-badge">
@@ -381,7 +381,6 @@
     let isLoginOverlayVisible = false;
 
     function checkTrialPeriod() {
-       return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
       const trialStartDate = new Date(2026, 1, 7); 
       const trialDays = 14;
       const trialExpiryDate = new Date(trialStartDate);
@@ -466,7 +465,8 @@
             urls.forEach((u, i) => {
                 let cleanLink = u.trim();
                 if (cleanLink) {
-                    let fileName = urls.length > 1 ? `📄 Xem file đính kèm ${i + 1}` : `📄 Xem file đính kèm`;
+                    // CẬP NHẬT: Thay đổi nhãn hiển thị thành "Chứng từ"
+                    let fileName = urls.length > 1 ? `📄 Chứng từ đính kèm ${i + 1}` : `📄 Chứng từ đính kèm`;
                     html += `<a href="${cleanLink}" target="_blank" class="text-success fs-6 fw-bold text-decoration-none d-block mb-1"><i class="bi bi-check-circle-fill"></i> ${fileName}</a>`;
                 }
             });
@@ -667,7 +667,8 @@
                  links.forEach((lk, idx) => {
                      let cleanLink = lk.trim();
                      if (cleanLink) {
-                         let label = links.length > 1 ? `Xem (${idx + 1})` : 'Xem';
+                         // CẬP NHẬT: Thay đổi nhãn hiển thị thành "Chứng từ"
+                         let label = links.length > 1 ? `Chứng từ (${idx + 1})` : 'Chứng từ';
                          linkHtml += `<div class="mb-1"><a href="${cleanLink}" target="_blank" class="text-primary text-decoration-none fw-bold" style="font-size:14px; white-space:nowrap;"><i class="bi bi-paperclip"></i> ${label}</a></div>`;
                      }
                  });
