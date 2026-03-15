@@ -124,7 +124,7 @@
     
     #warnDeleteFile { display: none; margin-top: 10px; padding: 8px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; font-size: 0.85rem; text-align: center; }
 
-    /* --- LOGIN OVERLAY --- */
+    /* --- GIAO DIỆN ĐĂNG NHẬP --- */
     #login-overlay { 
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: #f0fdf4; z-index: 999999; 
@@ -155,14 +155,21 @@
     </div>
   </div>
 
-  <div id="login-overlay" style="display:none;">
+  <div id="login-overlay">
     <div class="login-box">
       <img src="https://i.ibb.co/SXSKh9xM/Logo-m-i-c-a-tr-ng-H-p-Th-Nh.png" class="login-logo">
       <h2 style="color: #0d6efd; margin-top: 0; text-transform: uppercase; font-size: 24px; font-weight: bold;">Quản Lý Các Quỹ</h2>
       <h3 style="color: #dc3545; margin-bottom: 25px; border-bottom: none; font-size: 18px;">Trường TH&THCS Hợp Thành</h3>
       <p style="font-size: 14px; color: #666; font-style: italic; margin-bottom: 20px;">Hệ thống yêu cầu xác thực bằng Email được cấp quyền</p>
       
-      <div id="buttonDiv" class="d-flex justify-content-center w-100 mt-2"></div>
+      <div id="g_id_onload"
+           data-client_id="376040819369-4snobajf9rcspsq8gqts78sq894kp2l5.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+      <div class="d-flex justify-content-center w-100 mt-2">
+         <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
+      </div>
       
       <div style="margin-top: 30px; font-size: 12px; color: #999; font-weight: bold; text-align: center;">Nhà phát triển: HOÀNG NGỌC LÂM</div>
     </div>
@@ -178,7 +185,7 @@
   <div id="accessDeniedBanner" class="overlay-screen" style="display:none;">
     <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.1); text-align:center;">
       <i class="bi bi-shield-lock-fill text-danger" style="font-size: 60px;"></i>
-      <h3 class="fw-bold text-danger mt-3">KHÔNG CÓ QUYỀN TRUY CẬP</h3>
+      <h3 class="fw-bold text-danger mt-3"> BẠN KHÔNG CÓ QUYỀN TRUY CẬP</h3>
       <p class="text-muted">Xin chào: <b class="text-primary" id="deniedEmailTxt"></b></p>
       <p class="text-muted">Vui lòng liên hệ quản trị viên.</p>
       <button onclick="logoutGoogle()" class="btn btn-sm btn-outline-danger fw-bold mt-2">Đổi tài khoản</button>
@@ -329,7 +336,7 @@
 
     </div>
     
-    <div class="dev-footer">Phát triển ứng dụng: <b>Hoàng Ngọc Lâm</b> - Hiệu trưởng Trường Tiểu học Hợp Thành</div>
+    <div class="dev-footer">Phát triển ứng dụng: <b>Hoàng Ngọc Lâm</b> - Trường TH&THCS Hợp Thành</div>
     
   </div>
 
@@ -395,8 +402,6 @@
     // ==========================================================
     // 0. BẢN QUYỀN VÀ AUTHENTICATION (CẬP NHẬT)
     // ==========================================================
-    let isGoogleLoaded = false;
-    let isLoginOverlayVisible = false;
 
     function checkTrialPeriod() {
        return true; // <--- CHỈ CẦN THÊM DÒNG NÀY ĐỂ TẠM TẮT TÍNH NĂNG
@@ -438,35 +443,11 @@
       const storedEmail = sessionStorage.getItem("USER_EMAIL_TC");
       if(storedEmail) {
         window.GLOBAL_EMAIL = storedEmail; 
-        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('login-overlay').style.display = 'none'; // Ẩn đi khi đã có phiên
         loadUserContext(storedEmail);
-      } else {
-        document.getElementById('login-overlay').style.display = 'flex';
-        isLoginOverlayVisible = true;
-        renderGoogleButton();
       }
+      // Không cần lệnh else bật display flex ở đây vì nó đã mở mặc định
     });
-
-    function initGoogleAuth() {
-      isGoogleLoaded = true;
-      renderGoogleButton();
-    }
-
-    function renderGoogleButton() {
-      if (isGoogleLoaded && isLoginOverlayVisible) {
-        const id1 = "376040819369-4snobajf9rcspsq8gqts";
-        const id2 = "78sq894kp2l5.apps.googleusercontent.com";
-        
-        google.accounts.id.initialize({
-            client_id: id1 + id2,
-            callback: handleCredentialResponse
-        });
-        google.accounts.id.renderButton(
-            document.getElementById("buttonDiv"),
-            { theme: "outline", size: "large", shape: "rectangular", text: "sign_in_with", logo_alignment: "left" }
-        );
-      }
-    }
 
     function decodeJwtResponse(token) {
       let base64Url = token.split('.')[1];
@@ -484,7 +465,6 @@
       window.GLOBAL_EMAIL = email; 
       
       document.getElementById('login-overlay').style.display = 'none';
-      isLoginOverlayVisible = false;
       loadUserContext(email);
     }
 
