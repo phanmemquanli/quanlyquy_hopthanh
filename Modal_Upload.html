@@ -1,17 +1,22 @@
 <style>
-  /* CSS riêng cho Modal Upload (Mượn từ Sổ Kiểm tra nội bộ) */
+  /* CSS chuẩn theo thiết kế dự án Sổ Kiểm tra Nội bộ */
   #upload_modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10005; justify-content: center; align-items: center; }
   .up-container { background: white; padding: 20px; border-radius: 12px; width: 600px; max-width: 95%; box-shadow: 0 5px 20px rgba(0,0,0,0.3); font-family: "Times New Roman", serif; }
-  .up-header { text-align: center; border-bottom: 2px solid #1e3a8a; margin-bottom: 15px; padding-bottom: 5px; }
-  .up-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
-  .up-dropzone { border: 2px dashed #3b82f6; padding: 25px; text-align: center; background: white; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-bottom: 10px; }
+  .up-header { text-align: center; border-bottom: 2px solid #1e3a8a; margin-bottom: 15px; padding-bottom: 10px; }
+  .up-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 10px; }
+  .up-dropzone { border: 2px dashed #3b82f6; padding: 25px; text-align: center; background: white; border-radius: 8px; cursor: pointer; transition: 0.2s; }
   .up-dropzone:hover { background: #eff6ff; }
   .up-dropzone.has-file { border-color: #16a34a; background-color: #dcfce7; border-style: solid; }
-  #uploadBtn { width: 100%; padding: 12px; background: #059669; color: white; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; opacity: 0.5; pointer-events: none; margin-top: 10px; transition: 0.2s; }
+  
+  /* Nút bấm theo hình ảnh */
+  #uploadBtn { width: 100%; padding: 12px; background: #7bc4a6; color: white; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; opacity: 0.5; pointer-events: none; margin-top: 10px; transition: 0.2s; font-size: 16px; }
   #uploadBtn.active { opacity: 1; pointer-events: auto; }
-  #uploadBtn.active:hover { background: #047857; }
-  .close-up { background: #ef4444; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
+  #uploadBtn.active:hover { background: #62ab8e; }
+  
+  .close-up { background: #ef4444; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; float: right; transition: 0.2s; }
   .close-up:hover { background: #dc2626; }
+  
+  #warnDelete { display:none; color:#d97706; font-size:13px; text-align:center; margin-bottom:5px; font-weight:bold; background: #fffbeb; padding: 5px; border-radius: 4px; border: 1px dashed #d97706; }
   
   .btn-create-folder { border: 1px solid #ccc; background: #f0fdf4; color: #16a34a; padding: 0 10px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 16px; display:flex; justify-content:center; align-items:center; transition: 0.2s; }
   .btn-create-folder:hover { background: #dcfce7; }
@@ -20,11 +25,11 @@
 <div id="upload_modal">
   <div class="up-container">
     <div class="up-header">
-       <h4 style="margin:0; color:#1e3a8a; font-weight:bold;">📁 TẢI CHỨNG TỪ TÀI TRỢ</h4>
+       <h3 style="margin:0; color:#1e3a8a; font-weight:bold;">📁 CHỨNG TỪ TÀI TRỢ</h3>
     </div>
     
     <div class="up-box">
-      <label class="fw-bold small mb-1" style="color:#003366;">1. Thư mục lưu trữ (Trung tâm):</label>
+      <label class="fw-bold small mb-1" style="color:#003366;">1. Chọn thư mục lưu trữ (Trung tâm):</label>
       <div style="display:flex; gap:5px;">
           <select id="folderSelect" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:4px; font-family:'Times New Roman';"><option>⏳ Đang tải...</option></select>
           <button class="btn-create-folder" onclick="toggleNewFolderUI()" title="Tạo thư mục mới"><i class="bi bi-folder-plus"></i></button>
@@ -40,40 +45,38 @@
     </div>
 
     <div class="up-box">
-      <label class="fw-bold small" style="display:block; margin-bottom:10px; color:#003366;">2. Chế độ tải:</label>
-      <div style="display:flex; gap:20px; justify-content:center; margin-bottom:15px; font-weight:bold;">
-        <label style="cursor:pointer;"><input type="radio" name="upMode" value="file" checked onchange="toggleUpMode()"> 📄 Chọn File lẻ</label>
-        <label style="cursor:pointer;"><input type="radio" name="upMode" value="folder" onchange="toggleUpMode()"> 📂 Cả thư mục</label>
+      <label class="fw-bold small" style="display:block; margin-bottom:10px; color:#003366;">2. Chọn chế độ và phương thức tải:</label>
+      
+      <div style="display:flex; gap:30px; justify-content:center; margin-bottom:15px; font-weight:bold;">
+        <label style="cursor:pointer;"><input type="radio" name="upMode" value="file" checked onchange="toggleUpMode()"> 📄 Chọn nhiều File lẻ</label>
+        <label style="cursor:pointer;"><input type="radio" name="upMode" value="folder" onchange="changeToFolderMode()"> 📂 Cả thư mục</label>
+      </div>
+      
+      <div style="display:flex; gap:30px; justify-content:center; padding:10px; background:#e0f2fe; border-radius:6px; margin-bottom:15px; font-weight:bold; font-size: 14.5px;">
+        <label style="color:#0369a1; cursor:pointer;" title="Xóa tài liệu cũ, thay bằng tài liệu mới">
+          <input type="radio" name="writeMode" value="replace" checked onchange="updateWarnDisplay()"> 🔄 Thay thế tài liệu cũ
+        </label>
+        <label style="color:#6b21a8; cursor:pointer;" title="Giữ tài liệu cũ, nối thêm tài liệu mới">
+          <input type="radio" name="writeMode" value="append" onchange="updateWarnDisplay()"> ➕ Chèn thêm tài liệu
+        </label>
       </div>
       
       <div id="dropZone" class="up-dropzone" onclick="document.getElementById('fileIn').click()">
         <div id="dropZoneContent">
-            <i class="bi bi-cloud-arrow-up text-primary" style="font-size: 40px;"></i><br>
-            <span id="fileText" style="font-weight:bold; color:#555;">Nhấn vào đây để chọn file</span>
+            <span id="fileText" style="font-weight:bold; color:#333; font-size:16px;">Nhấn để chọn file</span>
         </div>
-        <input type="file" id="fileIn" style="display:none" onchange="fileSel(this)">
+        <input type="file" id="fileIn" style="display:none" onchange="fileSel(this)" multiple>
       </div>
     </div>
 
-    <div id="boxWriteMode" style="display:none; background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px dashed #d97706; margin-bottom: 10px;">
-      <div style="color:#d97706; font-size:13px; text-align:center; font-weight:bold; margin-bottom:8px;">
-         ⚠️ Đã có chứng từ đính kèm trước đó. Bạn muốn:
-      </div>
-      <div style="display:flex; gap:20px; justify-content:center; font-weight:bold; font-size: 14px;">
-        <label style="cursor:pointer; color:#dc2626;">
-           <input type="radio" name="wMode" value="replace" checked> 🔄 Thay thế (Xóa cũ)
-        </label>
-        <label style="cursor:pointer; color:#059669;">
-           <input type="radio" name="wMode" value="append"> ➕ Chèn thêm (Giữ cũ)
-        </label>
-      </div>
-    </div>
+    <div id="warnDelete">⚠️ Chứng từ cũ trên Drive sẽ bị xóa vĩnh viễn để thay thế bằng chứng từ mới!</div>
 
-    <div id="upStatus" style="text-align:center; font-weight:bold; min-height:20px; font-size:0.9rem; margin-top:5px;"></div>
+    <div id="upStatus" style="text-align:center; font-weight:bold; min-height:20px; font-size:0.95rem; margin-top:5px;"></div>
     
-    <div style="display:flex; gap:10px; margin-top:10px;">
-      <button id="uploadBtn" onclick="doUpload()" disabled>BẮT ĐẦU TẢI LÊN</button>
+    <div style="margin-top:10px;">
+      <button id="uploadBtn" onclick="doUpload()">BẮT ĐẦU TẢI LÊN</button>
       <button class="close-up" onclick="closeUploadModal()">ĐÓNG</button>
+      <div style="clear:both"></div>
     </div>
   </div>
 </div>
@@ -85,22 +88,29 @@
 
   function openUploadModal() { 
      LINK_CAN_XOA = document.getElementById('i_proof_url').value || "";
-     if(LINK_CAN_XOA) {
-         document.getElementById('boxWriteMode').style.display = 'block';
-     } else {
-         document.getElementById('boxWriteMode').style.display = 'none';
-     }
+     updateWarnDisplay();
      document.getElementById('upload_modal').style.display = 'flex'; 
      loadFolders();
+  }
+
+  function updateWarnDisplay() {
+    const wMode = document.querySelector('input[name="writeMode"]:checked').value;
+    const warnDiv = document.getElementById('warnDelete');
+    if(wMode === 'replace' && LINK_CAN_XOA && LINK_CAN_XOA.trim() !== "") {
+        warnDiv.style.display = 'block';
+    } else {
+        warnDiv.style.display = 'none';
+    }
   }
 
   function closeUploadModal() {
      document.getElementById('upload_modal').style.display = 'none';
      document.getElementById('upStatus').innerText = "";
      document.getElementById('fileIn').value = "";
-     document.getElementById('fileText').innerHTML = "Nhấn vào đây để chọn file";
-     document.getElementById('boxWriteMode').style.display = 'none';
-     document.querySelector('input[name="wMode"][value="replace"]').checked = true;
+     document.getElementById('fileText').innerHTML = "Nhấn để chọn file";
+     document.getElementById('dropZone').classList.remove('has-file');
+     document.getElementById('warnDelete').style.display = 'none';
+     document.querySelector('input[name="writeMode"][value="replace"]').checked = true;
      CURR_FILES = [];
      document.getElementById('uploadBtn').classList.remove('active');
      document.getElementById('uploadBtn').disabled = true;
@@ -120,19 +130,25 @@
   }
 
   function toggleUpMode() {
-     const mode = document.querySelector('input[name="upMode"]:checked').value;
      const inp = document.getElementById('fileIn');
-     inp.value = ""; document.getElementById('fileText').innerHTML = "Nhấn vào đây để chọn file";
+     inp.removeAttribute('webkitdirectory'); inp.removeAttribute('directory'); 
+     inp.setAttribute('multiple', 'multiple'); 
+     resetFileInput();
+  }
+
+  function changeToFolderMode() {
+     const inp = document.getElementById('fileIn');
+     inp.setAttribute('webkitdirectory', ''); inp.setAttribute('directory', ''); inp.setAttribute('multiple', 'multiple');
+     resetFileInput();
+  }
+
+  function resetFileInput() {
+     document.getElementById('fileIn').value = "";
+     document.getElementById('fileText').innerHTML = "Nhấn để chọn file";
+     document.getElementById('dropZone').classList.remove('has-file');
      document.getElementById('uploadBtn').disabled = true; 
      document.getElementById('uploadBtn').classList.remove('active');
      CURR_FILES = [];
-     
-     if (mode === 'folder') { 
-       inp.setAttribute('webkitdirectory', '');
-       inp.setAttribute('directory', ''); inp.setAttribute('multiple', ''); 
-     } else { 
-       inp.removeAttribute('webkitdirectory'); inp.removeAttribute('directory'); inp.removeAttribute('multiple');
-     }
   }
 
   function fileSel(input) {
@@ -143,44 +159,86 @@
        document.getElementById('dropZone').classList.add('has-file'); 
        
        if (mode === 'folder') {
-          document.getElementById('fileText').innerText = `📂 ${CURR_FILES[0].webkitRelativePath.split('/')[0]} (${CURR_FILES.length} files)`;
+          document.getElementById('fileText').innerText = `📂 ${CURR_FILES[0].webkitRelativePath.split('/')[0]} (${CURR_FILES.length} file)`;
        } else {
-          document.getElementById('fileText').innerText = "📄 " + CURR_FILES[0].name;
+          if (CURR_FILES.length === 1) {
+              document.getElementById('fileText').innerText = "📄 " + CURR_FILES[0].name;
+          } else {
+              document.getElementById('fileText').innerText = `📄 Đã chọn ${CURR_FILES.length} file lẻ`;
+          }
        }
        document.getElementById('uploadBtn').disabled = false;
        document.getElementById('uploadBtn').classList.add('active');
      }
   }
 
-  function doUpload() {
+  // Hàm đọc file ra chuỗi base64 (Hỗ trợ upload tuần tự)
+  function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = e => resolve(e.target.result.split(',')[1]);
+          r.onerror = err => reject(err);
+          r.readAsDataURL(file);
+      });
+  }
+
+  async function doUpload() {
      if (!CURR_FILES || CURR_FILES.length === 0) return;
      const btn = document.getElementById('uploadBtn'), st = document.getElementById('upStatus');
      const fId = document.getElementById('folderSelect').value || ROOT_ID; 
      const mode = document.querySelector('input[name="upMode"]:checked').value;
      
-     // Xác định chế độ Ghi đè hay Chèn thêm
-     const wMode = LINK_CAN_XOA ? document.querySelector('input[name="wMode"]:checked').value : 'replace';
+     const wMode = document.querySelector('input[name="writeMode"]:checked').value;
      const urlToDel = (wMode === 'replace') ? LINK_CAN_XOA : "";
      
      btn.classList.remove('active');
      btn.disabled = true;
-     st.style.color = "blue"; st.innerText = "⏳ Đang xử lý tải lên...";
-
+     st.style.color = "blue"; 
+     
+     // TRƯỜNG HỢP 1: TẢI FILE LẺ (1 FILE HOẶC NHIỀU FILE)
      if (mode === 'file') {
-       const file = CURR_FILES[0];
-       const r = new FileReader();
-       r.onload = e => {
-         const b64 = e.target.result.split(',')[1];
-         callServer('TC_uploadProof', {base64Data: b64, fileName: file.name, mimeType: file.type, targetFolderId: fId, oldUrl: urlToDel, email: window.GLOBAL_EMAIL})
-           .then(res => { handleUpResult(res, st, btn, wMode); })
-           .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
-       };
-       r.readAsDataURL(file);
+         let finalUrls = [];
+         let finalNames = [];
+         
+         for (let i = 0; i < CURR_FILES.length; i++) {
+             let file = CURR_FILES[i];
+             st.innerText = `⏳ Đang xử lý tải lên ${i + 1}/${CURR_FILES.length}...`;
+             
+             try {
+                 let b64 = await readFileAsBase64(file);
+                 // LƯU Ý: Chỉ gửi lệnh xóa file cũ ở lần upload đầu tiên để tránh lỗi
+                 let currentUrlToDel = (i === 0) ? urlToDel : "";
+                 
+                 let res = await callServer('TC_uploadProof', {
+                     base64Data: b64, fileName: file.name, mimeType: file.type, 
+                     targetFolderId: fId, oldUrl: currentUrlToDel, email: window.GLOBAL_EMAIL
+                 });
+                 
+                 if (res.success) {
+                     finalUrls.push(res.url);
+                     finalNames.push(res.name);
+                 } else {
+                     throw new Error(res.msg);
+                 }
+             } catch (err) {
+                 handleUpResult({success: false, msg: err.message}, st, btn);
+                 return; // Dừng lại nếu có lỗi
+             }
+         }
+         
+         // Nếu chạy hết vòng lặp thành công
+         handleUpResult({
+             success: true, 
+             url: finalUrls.join(", "), 
+             name: finalNames.join(" + ")
+         }, st, btn, wMode);
 
-     } else { 
+     } 
+     // TRƯỜNG HỢP 2: TẢI CẢ THƯ MỤC
+     else { 
        const folderName = CURR_FILES[0].webkitRelativePath.split('/')[0];
        let filesData = []; let count = 0;
-       st.innerText = `⏳ Đang đọc ${CURR_FILES.length} file...`;
+       st.innerText = `⏳ Đang nén ${CURR_FILES.length} file trong thư mục...`;
        
        Array.from(CURR_FILES).forEach(file => {
           const r = new FileReader();
@@ -188,7 +246,7 @@
              filesData.push({ fileName: file.name, mimeType: file.type, data: e.target.result.split(',')[1] });
              count++;
              if (count === CURR_FILES.length) {
-                st.innerText = "⏳ Đang gửi dữ liệu lên thư mục trung tâm...";
+                st.innerText = "⏳ Đang gửi thư mục lên Drive trung tâm...";
                 callServer('TC_uploadFolderProof', {targetFolderId: fId, folderName: folderName, filesData: filesData, oldUrl: urlToDel, email: window.GLOBAL_EMAIL})
                   .then(res => { handleUpResult(res, st, btn, wMode); })
                   .catch(err => { handleUpResult({success:false, msg: err.message}, st, btn); });
@@ -207,7 +265,7 @@
        const oldUrl = document.getElementById('i_proof_url').value;
        const oldName = document.getElementById('i_proof_name').value;
        
-       // Nối link nếu chọn Chèn Thêm, ngược lại Ghi đè
+       // Gộp link nếu chọn Chèn Thêm, ngược lại Thay thế
        if (wMode === 'append' && oldUrl) {
           document.getElementById('i_proof_url').value = oldUrl + ", " + res.url;
           document.getElementById('i_proof_name').value = oldName + " + " + res.name;
@@ -217,9 +275,10 @@
        }
        
        document.getElementById('preview-text').innerText = "Đã tải xong";
-       document.getElementById('btn-preview').href = res.url;
+       // Nếu có nhiều link, chỉ lấy link đầu tiên gán vào thẻ <a> để xem trước
+       document.getElementById('btn-preview').href = res.url.split(',')[0];
        document.getElementById('preview-area').style.display = 'block';
-       document.getElementById('boxWriteMode').style.display = 'none';
+       document.getElementById('warnDelete').style.display = 'none';
        
        setTimeout(closeUploadModal, 1000);
      } else {
